@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Himlayang Pilipino Memorial Park",
+    "slug": "himlayang-pilipino-memorial-park",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#2E7D32"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.himlayangpilipinomemorialpark"
+    },
+    "android": {
+      "package": "com.himlayangpilipinomemorialpark",
+      "versionCode": 1,
+      "usesCleartextTraffic": true,
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Himlayang Pilipino to access your camera for QR code scanning."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Himlayang Pilipino to use your location for navigation assistance."
+        }
+      ]
+    ]
+  }
+}
