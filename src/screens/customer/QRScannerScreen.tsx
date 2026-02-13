@@ -45,41 +45,34 @@ const QRScannerScreen: React.FC = () => {
     setScanned(true);
 
     try {
-      console.log('QR scanned:', data);
+      console.log("QR scanned:", data);
 
-      const response = await api.get(`/public/grave/${data}`);
+      // ✅ extract UUID from URL
+      const code = data.split('/').pop();
 
-      if (!response.success) throw new Error();
+      if (!code) throw new Error("Invalid QR");
 
-      Alert.alert(
-        'Grave Found',
-        'Open grave details?',
-        [
-          {
-            text: 'Cancel',
-            onPress: () => {
-              setScanning(false);
-              setScanned(false);
-            },
-            style: 'cancel',
-          },
-          {
-            text: 'Open',
-            onPress: () => {
-              setScanning(false);
-              setScanned(false);
-              navigation.navigate('GraveDetails', {
-                graveId: data,
-              });
-            },
-          },
-        ]
-      );
-    } catch {
-      Alert.alert('Error', 'Invalid QR code');
+      console.log("Extracted code:", code);
+
+      const response = await api.get(`/grave/${code}`);
+
+      if (!response.success) {
+        throw new Error(response.message);
+      }
+
+      const grave = response.data;
+
+      navigation.navigate("GraveDetails", {
+        graveId: grave.id,
+      });
+
+    } catch (err) {
+      console.log("QR scan error:", err);
+      Alert.alert("Error", "Invalid QR code");
       setScanned(false);
     }
   };
+
 
   return (
     <View style={commonStyles.container}>
@@ -95,7 +88,6 @@ const QRScannerScreen: React.FC = () => {
         {/* Scanner Box */}
         <View style={styles.scannerContainer}>
           <View style={styles.scannerFrame}>
-
             {scanning ? (
               <CameraView
                 style={StyleSheet.absoluteFillObject}
@@ -125,9 +117,7 @@ const QRScannerScreen: React.FC = () => {
             style={commonStyles.button}
             onPress={handleScanPress}
           >
-            <Text style={commonStyles.buttonText}>
-              📷 Start Scan
-            </Text>
+            <Text style={commonStyles.buttonText}>📷 Start Scan</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

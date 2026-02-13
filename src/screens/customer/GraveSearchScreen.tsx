@@ -67,18 +67,30 @@ const GraveSearchScreen: React.FC = () => {
     setSearchResults([]);
   };
 
-  const handleResultPress = (result: SearchResult) => {
-    console.log("👉 RESULT TAPPED:", result);
+const handleResultPress = async (result: SearchResult) => {
+  console.log("👉 RESULT TAPPED:", result);
 
-    if (!result.plot) {
-      console.log("❌ No plot data!");
+  try {
+    const response = await api.get(`/burial-records/${result.id}`);
+
+    console.log("📦 API response:", response);
+
+    if (!response.success) {
+      console.log("❌ Burial fetch failed:", response.message);
       return;
     }
 
+    const grave = response.data;
+
     navigation.navigate("GraveMap", {
-      plot: result.plot,
+      plot: grave.plot,
     });
-  };
+
+  } catch (err) {
+    console.error("Burial fetch error:", err);
+  }
+};
+
 
 
   return (

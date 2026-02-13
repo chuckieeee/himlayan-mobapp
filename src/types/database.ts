@@ -37,20 +37,32 @@ export interface Plot {
 export interface BurialRecord {
   id: number;
   plot_id: number;
+
+  // deceased info
   deceased_name: string;
   birth_date: string | null;
   death_date: string;
   burial_date: string;
+
   photo_url: string | null;
   obituary: string | null;
   notes: string | null;
+
+  // contact (legacy + structured)
   contact_name: string | null;
+
+  contact_first_name?: string | null;
+  contact_middle_initial?: string | null;
+  contact_last_name?: string | null;
+
   contact_phone: string | null;
   contact_email: string | null;
+
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
 }
+
 
 // =====================================================
 // QR CODE MODEL

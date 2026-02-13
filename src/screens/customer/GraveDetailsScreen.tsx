@@ -15,6 +15,7 @@ import { GraveService } from '@services/GraveService';
 import { Grave } from '@data/mockData';
 import { colors, spacing, typography } from '@styles/theme';
 import { commonStyles } from '@styles/commonStyles';
+import MapView, { Marker } from 'react-native-maps';
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 type GraveDetailsRouteProp = RouteProp<RootStackParamList, 'GraveDetails'>;
@@ -31,22 +32,53 @@ const GraveDetailsScreen: React.FC = () => {
     loadGraveDetails();
   }, [graveId]);
 
-  const loadGraveDetails = async () => {
-    setLoading(true);
-    const graveData = await GraveService.getGraveById(graveId);
-    setGrave(graveData);
+const loadGraveDetails = async () => {
+  setLoading(true);
+
+  const apiGrave = await GraveService.getGraveById(graveId);
+
+  if (!apiGrave) {
+    setGrave(null);
     setLoading(false);
+    return;
+  }
+
+  // convert backend → UI format
+  const mappedGrave: Grave = {
+    deceasedName: apiGrave.deceased_name,
+    section: apiGrave.plot.section,
+    lotNumber: apiGrave.plot.plot_number,
+    birthDate: apiGrave.birth_date,
+    deathDate: apiGrave.death_date,
+    burialDate: apiGrave.burial_date,
+    familyContact: apiGrave.contact_name,
+    qrCode: apiGrave.qr_code?.code ?? "N/A",
+
+    location: {
+      latitude: Number(apiGrave.plot.latitude),
+      longitude: Number(apiGrave.plot.longitude),
+    },
   };
 
-  const handleNavigate = () => {
-    if (grave) {
-      Alert.alert(
-        'Navigation',
-        `GPS Navigation to ${grave.deceasedName}\n\nCoordinates:\nLat: ${grave.location.latitude}\nLng: ${grave.location.longitude}\n\nThis would open maps app in production.`,
-        [{ text: 'OK' }]
-      );
-    }
-  };
+  console.log("Mapped grave:", mappedGrave);
+
+  setGrave(mappedGrave);
+  setLoading(false);
+};
+
+    const handleNavigate = () => {
+      if (!grave) return;
+
+      navigation.navigate("GraveMap", {
+        plot: {
+          latitude: grave.location.latitude,
+          longitude: grave.location.longitude,
+          plot_number: grave.lotNumber,
+          section: grave.section,
+        },
+      });
+    };
+
 
   if (loading) {
     return (
@@ -69,6 +101,21 @@ const GraveDetailsScreen: React.FC = () => {
     );
   }
 
+      // ✅ Contact display logic
+      const displayContact = grave.familyContact || "Family Representative";
+
+  const formatDate = (isoDate?: string) => {
+    if (!isoDate) return "—";
+
+    const date = new Date(isoDate);
+
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <View style={commonStyles.container}>
       {/* Header */}
@@ -89,80 +136,94 @@ const GraveDetailsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Details Card */}
-        <View style={commonStyles.card}>
-          <Text style={styles.sectionTitle}>Information</Text>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Lot Number:</Text>
-            <Text style={styles.detailValue}>{grave.lotNumber}</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Birth Date:</Text>
-            <Text style={styles.detailValue}>{grave.birthDate}</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Death Date:</Text>
-            <Text style={styles.detailValue}>{grave.deathDate}</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Burial Date:</Text>
-            <Text style={styles.detailValue}>{grave.burialDate}</Text>
-          </View>
-          
-          {grave.familyContact && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Contact:</Text>
-              <Text style={styles.detailValue}>{grave.familyContact}</Text>
-            </View>
-          )}
-        </View>
+    {/* Details Card */}
+    <View style={commonStyles.card}>
+      <Text style={styles.sectionTitle}>Information</Text>
+
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>Lot Number:</Text>
+        <Text style={styles.detailValue}>
+          {grave.lotNumber}
+        </Text>
+      </View>
+
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>Birth Date:</Text>
+        <Text style={styles.detailValue}>
+          {formatDate(grave.birthDate)}
+        </Text>
+      </View>
+
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>Death Date:</Text>
+        <Text style={styles.detailValue}>
+          {formatDate(grave.deathDate)}
+        </Text>
+      </View>
+
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>Burial Date:</Text>
+        <Text style={styles.detailValue}>
+          {formatDate(grave.burialDate)}
+        </Text>
+      </View>
+
+      {displayContact && (
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>Contact:</Text>
+        <Text style={styles.detailValue}>
+          {displayContact}
+        </Text>
+      </View>
+
+      )}
+    </View>
+
 
         {/* Location Card */}
         <View style={commonStyles.card}>
           <Text style={styles.sectionTitle}>Location</Text>
-          
-          <View style={styles.mapPlaceholder}>
-            <Text style={styles.mapIcon}>🗺️</Text>
-            <Text style={styles.mapText}>Map Preview</Text>
-            <Text style={styles.coordinatesText}>
-              {grave.location.latitude.toFixed(4)}, {grave.location.longitude.toFixed(4)}
-            </Text>
-          </View>
-          
+
+          <MapView
+            style={styles.previewMap}
+            initialRegion={{
+              latitude: grave.location.latitude,
+              longitude: grave.location.longitude,
+              latitudeDelta: 0.002,
+              longitudeDelta: 0.002,
+            }}
+
+            scrollEnabled={false}
+            zoomEnabled={false}
+            pitchEnabled={false}
+            rotateEnabled={false}
+          >
+            <Marker
+              coordinate={{
+                latitude: grave.location.latitude,
+                longitude: grave.location.longitude,
+              }}
+              title={grave.deceasedName}
+              description={`Plot ${grave.lotNumber}`}
+            />
+          </MapView>
+
+          <Text style={styles.coordinatesText}>
+            {grave.location.latitude.toFixed(4)},{" "}
+            {grave.location.longitude.toFixed(4)}
+          </Text>
+
           <TouchableOpacity
             style={[commonStyles.button, styles.navigateButton]}
-            onPress={handleNavigate}>
-            <Text style={commonStyles.buttonText}>📍 Navigate to Location</Text>
+            onPress={handleNavigate}
+          >
+            <Text style={commonStyles.buttonText}>
+              📍 Navigate to Location
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* QR Code Card */}
-        <View style={commonStyles.card}>
-          <Text style={styles.sectionTitle}>QR Code</Text>
-          
-          <View style={styles.qrPlaceholder}>
-            <Text style={styles.qrIcon}>QR</Text>
-            <Text style={styles.qrText}>{grave.qrCode}</Text>
-          </View>
-          
-          <Text style={styles.qrNote}>
-            Scan this QR code at the monument for quick access
-          </Text>
-        </View>
 
-        {/* Heritage Info */}
-        <View style={[commonStyles.card, styles.heritageCard]}>
-          <Text style={styles.heritageTitle}>🇵🇭 Filipino Heritage</Text>
-          <Text style={styles.heritageText}>
-            This monument is part of Himlayang Pilipino's cultural heritage
-            preservation initiative, honoring Filipino heroes and their
-            contributions to our nation's history.
-          </Text>
-        </View>
       </ScrollView>
     </View>
   );
@@ -305,6 +366,12 @@ const styles = StyleSheet.create({
     color: colors.error,
     marginBottom: spacing.md,
   },
+  previewMap: {
+  height: 200,
+  borderRadius: 8,
+  marginBottom: spacing.md,
+  },
+
 });
 
 export default GraveDetailsScreen;

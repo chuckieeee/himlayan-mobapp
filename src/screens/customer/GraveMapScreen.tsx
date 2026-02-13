@@ -5,7 +5,7 @@ import * as Location from 'expo-location';
 
 const GraveMapScreen = ({ route }) => {
   const { plot } = route.params;
-
+console.log("Plot received:", plot);
   const latitude = Number(plot.latitude);
   const longitude = Number(plot.longitude);
 
