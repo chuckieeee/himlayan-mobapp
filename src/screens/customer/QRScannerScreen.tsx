@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
@@ -45,14 +39,14 @@ const QRScannerScreen: React.FC = () => {
     setScanned(true);
 
     try {
-      console.log("QR scanned:", data);
+      console.log('QR scanned:', data);
 
       // ✅ extract UUID from URL
       const code = data.split('/').pop();
 
-      if (!code) throw new Error("Invalid QR");
+      if (!code) throw new Error('Invalid QR');
 
-      console.log("Extracted code:", code);
+      console.log('Extracted code:', code);
 
       const response = await api.get(`/grave/${code}`);
 
@@ -62,17 +56,15 @@ const QRScannerScreen: React.FC = () => {
 
       const grave = response.data;
 
-      navigation.navigate("GraveDetails", {
+      navigation.navigate('GraveDetails', {
         graveId: grave.id,
       });
-
     } catch (err) {
-      console.log("QR scan error:", err);
-      Alert.alert("Error", "Invalid QR code");
+      console.log('QR scan error:', err);
+      Alert.alert('Error', 'Invalid QR code');
       setScanned(false);
     }
   };
-
 
   return (
     <View style={commonStyles.container}>
@@ -115,15 +107,13 @@ const QRScannerScreen: React.FC = () => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={commonStyles.button}
-            onPress={handleScanPress}
-          >
+            onPress={handleScanPress}>
             <Text style={commonStyles.buttonText}>📷 Start Scan</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={commonStyles.buttonSecondary}
-            onPress={() => setScanning(false)}
-          >
+            onPress={() => setScanning(false)}>
             <Text style={[commonStyles.buttonText, { color: colors.text }]}>
               Stop Camera
             </Text>

@@ -1,9 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '@/config/api';
 
-const API_BASE_URL = "https://malty-kandice-unwinded.ngrok-free.dev/api";
+const API_BASE_URL = 'https://malty-kandice-unwinded.ngrok-free.dev/api';
 const AUTH_TOKEN_KEY = STORAGE_KEYS.AUTH_TOKEN;
-
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -14,10 +13,10 @@ interface ApiResponse<T = any> {
 class ApiClient {
   private async getHeaders(): Promise<HeadersInit> {
     const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
-    console.log("🔑 Stored token:", token);
+    console.log('🔑 Stored token:', token);
     return {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   }

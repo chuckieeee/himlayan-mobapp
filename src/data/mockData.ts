@@ -5,7 +5,13 @@
 // =====================================================
 
 // Export new database types for compatibility
-export type { User, Plot, BurialRecord, GraveDetails, PlotWithBurial } from '@/types/database';
+export type {
+  User,
+  Plot,
+  BurialRecord,
+  GraveDetails,
+  PlotWithBurial,
+} from '@/types/database';
 
 // Legacy User interface (for backwards compatibility)
 export interface LegacyUser {
@@ -65,7 +71,7 @@ export const mockGraves: Grave[] = [
     birthDate: '1861-06-19',
     deathDate: '1896-12-30',
     burialDate: '1896-12-30',
-    location: { latitude: 14.6760, longitude: 121.0437 },
+    location: { latitude: 14.676, longitude: 121.0437 },
     section: 'Heritage Section A',
     qrCode: 'QR-LOT-001-A',
     familyContact: '+63 917 123 4567',
@@ -77,7 +83,7 @@ export const mockGraves: Grave[] = [
     birthDate: '1863-11-30',
     deathDate: '1897-05-10',
     burialDate: '1897-05-10',
-    location: { latitude: 14.6765, longitude: 121.0440 },
+    location: { latitude: 14.6765, longitude: 121.044 },
     section: 'Heritage Section B',
     qrCode: 'QR-LOT-002-B',
     familyContact: '+63 917 234 5678',
@@ -89,7 +95,7 @@ export const mockGraves: Grave[] = [
     birthDate: '1864-07-23',
     deathDate: '1903-05-13',
     burialDate: '1903-05-15',
-    location: { latitude: 14.6770, longitude: 121.0445 },
+    location: { latitude: 14.677, longitude: 121.0445 },
     section: 'Heritage Section C',
     qrCode: 'QR-LOT-003-C',
     familyContact: '+63 917 345 6789',
@@ -101,7 +107,7 @@ export const mockGraves: Grave[] = [
     birthDate: '1869-03-22',
     deathDate: '1964-02-06',
     burialDate: '1964-02-08',
-    location: { latitude: 14.6755, longitude: 121.0450 },
+    location: { latitude: 14.6755, longitude: 121.045 },
     section: 'Heritage Section D',
     qrCode: 'QR-LOT-004-D',
     familyContact: '+63 917 456 7890',

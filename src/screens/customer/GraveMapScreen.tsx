@@ -1,14 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet, Text, Dimensions } from 'react-native';
-import MapView, {
-  Marker,
-  PROVIDER_GOOGLE,
-  Region,
-} from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyAFLUi1PfE9oqHFHV6f2NazYgW8HpRRa9k";
+const GOOGLE_MAPS_API_KEY = 'AIzaSyAFLUi1PfE9oqHFHV6f2NazYgW8HpRRa9k';
 
 interface Plot {
   latitude: string | number;
@@ -74,16 +70,14 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
     lon2: number
   ) => {
     const R = 6371e3;
-    const toRad = (deg: number) => deg * Math.PI / 180;
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
 
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
 
     const a =
       Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) ** 2;
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
 
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   };
@@ -92,8 +86,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
     let subscription: Location.LocationSubscription;
 
     (async () => {
-      const { status } =
-        await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== 'granted') return;
 
@@ -112,7 +105,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           accuracy: Location.Accuracy.High,
           distanceInterval: 1,
         },
-        (loc) => {
+        loc => {
           const coords = loc.coords;
           setUserLocation(coords);
 
@@ -141,9 +134,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
     return () => subscription?.remove();
   }, [steps]);
 
-  const updateCurrentStep = (
-    coords: Location.LocationObjectCoords
-  ) => {
+  const updateCurrentStep = (coords: Location.LocationObjectCoords) => {
     if (!steps.length) return;
 
     const step = steps[currentStepIndex];
@@ -173,7 +164,6 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
 
   return (
     <View style={styles.container}>
-
       {/* TURN BY TURN NAV BOX */}
       {currentStep && (
         <View style={styles.navBox}>
@@ -181,9 +171,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
             {stripHtml(currentStep.html_instructions)}
           </Text>
 
-          <Text style={styles.navDistance}>
-            in {currentStep.distance.text}
-          </Text>
+          <Text style={styles.navDistance}>in {currentStep.distance.text}</Text>
         </View>
       )}
 
@@ -209,8 +197,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           }
         }
         showsUserLocation
-        followsUserLocation
-      >
+        followsUserLocation>
         <Marker
           coordinate={{
             latitude,
@@ -219,7 +206,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           title={`Plot ${plot.plot_number}`}
           description={`Section ${plot.section}`}
         />
-        
+
         {userLocation && (
           <MapViewDirections
             origin={{
@@ -234,15 +221,12 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
             strokeWidth={6}
             strokeColor="#4285F4"
             mode="WALKING"
-            onReady={(result) => {
-              const routeSteps =
-                result.legs[0].steps as unknown as Step[];
+            onReady={result => {
+              const routeSteps = result.legs[0].steps as unknown as Step[];
 
               setSteps(routeSteps);
             }}
-            onError={(err) =>
-              console.log("Directions error:", err)
-            }
+            onError={err => console.log('Directions error:', err)}
           />
         )}
       </MapView>

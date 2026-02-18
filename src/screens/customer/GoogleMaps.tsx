@@ -32,19 +32,16 @@ const GoogleMaps: React.FC = () => {
     try {
       const res = await apiRequest('/plots');
 
-      console.log("PLOT RESPONSE:", res);
+      console.log('PLOT RESPONSE:', res);
 
       // ✅ extract nested Laravel pagination data
       const plotArray = res?.data?.data ?? [];
 
       setPlots(plotArray);
-
     } catch (err) {
       console.log('Plot fetch error:', err);
     }
   };
-
-
 
   if (!location) {
     return (
@@ -67,13 +64,9 @@ const GoogleMaps: React.FC = () => {
         longitudeDelta: 0.01,
       }}
       showsUserLocation
-      showsMyLocationButton
-    >
+      showsMyLocationButton>
       {/* User marker */}
-      <Marker
-        coordinate={location}
-        title="You are here"
-      />
+      <Marker coordinate={location} title="You are here" />
 
       {/* Cemetery plots */}
       {plots.map(plot => (

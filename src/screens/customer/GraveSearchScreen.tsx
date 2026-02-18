@@ -49,7 +49,9 @@ const GraveSearchScreen: React.FC = () => {
     setLoading(true);
     setSearched(true);
     try {
-      const response = await api.get(`/public/search?q=${encodeURIComponent(searchQuery)}`);
+      const response = await api.get(
+        `/public/search?q=${encodeURIComponent(searchQuery)}`
+      );
       if (response.success) {
         setSearchResults(response.data || []);
       }
@@ -67,37 +69,36 @@ const GraveSearchScreen: React.FC = () => {
     setSearchResults([]);
   };
 
-const handleResultPress = async (result: SearchResult) => {
-  console.log("👉 RESULT TAPPED:", result);
+  const handleResultPress = async (result: SearchResult) => {
+    console.log('👉 RESULT TAPPED:', result);
 
-  try {
-    const response = await api.get(`/burial-records/${result.id}`);
+    try {
+      const response = await api.get(`/burial-records/${result.id}`);
 
-    console.log("📦 API response:", response);
+      console.log('📦 API response:', response);
 
-    if (!response.success) {
-      console.log("❌ Burial fetch failed:", response.message);
-      return;
+      if (!response.success) {
+        console.log('❌ Burial fetch failed:', response.message);
+        return;
+      }
+
+      const grave = response.data;
+
+      navigation.navigate('GraveMap', {
+        plot: grave.plot,
+      });
+    } catch (err) {
+      console.error('Burial fetch error:', err);
     }
-
-    const grave = response.data;
-
-    navigation.navigate("GraveMap", {
-      plot: grave.plot,
-    });
-
-  } catch (err) {
-    console.error("Burial fetch error:", err);
-  }
-};
-
-
+  };
 
   return (
     <View style={commonStyles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Find Your Loved Ones</Text>
@@ -119,17 +120,18 @@ const handleResultPress = async (result: SearchResult) => {
             returnKeyType="search"
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+            <TouchableOpacity
+              onPress={handleClearSearch}
+              style={styles.clearButton}>
               <Text style={styles.clearButtonText}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        <TouchableOpacity 
-          style={styles.searchButton} 
+        <TouchableOpacity
+          style={styles.searchButton}
           onPress={handleSearch}
-          disabled={loading || !searchQuery.trim()}
-        >
+          disabled={loading || !searchQuery.trim()}>
           {loading ? (
             <>
               <ActivityIndicator color={colors.surface} size="small" />
@@ -149,8 +151,7 @@ const handleResultPress = async (result: SearchResult) => {
                 <TouchableOpacity
                   key={idx}
                   onPress={() => setSearchQuery(term)}
-                  style={styles.suggestionTag}
-                >
+                  style={styles.suggestionTag}>
                   <Text style={styles.suggestionTagText}>{term}</Text>
                 </TouchableOpacity>
               ))}
@@ -170,19 +171,22 @@ const handleResultPress = async (result: SearchResult) => {
               <>
                 <View style={styles.resultsHeader}>
                   <Text style={styles.resultsTitle}>Results</Text>
-                  <Text style={styles.resultsCount}>{searchResults.length} found</Text>
+                  <Text style={styles.resultsCount}>
+                    {searchResults.length} found
+                  </Text>
                 </View>
-                {searchResults.map((result) => (
+                {searchResults.map(result => (
                   <TouchableOpacity
                     key={result.id}
                     style={styles.resultCard}
-                    onPress={() => handleResultPress(result)}
-                  >
+                    onPress={() => handleResultPress(result)}>
                     <View style={styles.resultAvatar}>
                       <Text style={styles.resultAvatarText}>👤</Text>
                     </View>
                     <View style={styles.resultInfo}>
-                      <Text style={styles.resultName}>{result.deceased_name}</Text>
+                      <Text style={styles.resultName}>
+                        {result.deceased_name}
+                      </Text>
                       <View style={styles.resultDetails}>
                         <Text style={styles.resultDetail}>
                           📍 Plot: {result.plot?.plot_number || 'N/A'}
@@ -210,11 +214,19 @@ const handleResultPress = async (result: SearchResult) => {
                 </Text>
                 <View style={styles.suggestions}>
                   <Text style={styles.suggestionsTitle}>Suggestions:</Text>
-                  <Text style={styles.suggestionItem}>• Check the spelling of the name</Text>
-                  <Text style={styles.suggestionItem}>• Try searching by last name only</Text>
-                  <Text style={styles.suggestionItem}>• Use shorter keywords</Text>
+                  <Text style={styles.suggestionItem}>
+                    • Check the spelling of the name
+                  </Text>
+                  <Text style={styles.suggestionItem}>
+                    • Try searching by last name only
+                  </Text>
+                  <Text style={styles.suggestionItem}>
+                    • Use shorter keywords
+                  </Text>
                 </View>
-                <TouchableOpacity onPress={handleClearSearch} style={styles.retryButton}>
+                <TouchableOpacity
+                  onPress={handleClearSearch}
+                  style={styles.retryButton}>
                   <Text style={styles.retryButtonText}>Try Again</Text>
                 </TouchableOpacity>
               </View>

@@ -47,7 +47,7 @@ const CustomerDashboardScreen: React.FC = () => {
     loadUser();
     loadAnnouncements();
     loadMyPlots();
-    
+
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
@@ -71,22 +71,22 @@ const CustomerDashboardScreen: React.FC = () => {
           title: 'Cemetery Open for All Saints Day',
           content: 'Oct 31 - Nov 2: Open 24 hours for visitors.',
           date: '2025-10-25',
-          type: 'important'
+          type: 'important',
         },
         {
           id: 2,
           title: 'New Memorial Garden',
           content: 'A new section of the memorial garden is now open.',
           date: '2025-10-01',
-          type: 'info'
+          type: 'info',
         },
         {
           id: 3,
           title: 'Online Payment Available',
           content: 'You can now pay your dues online.',
           date: '2025-09-15',
-          type: 'success'
-        }
+          type: 'success',
+        },
       ]);
     }
   };
@@ -105,10 +105,7 @@ const CustomerDashboardScreen: React.FC = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([
-      loadAnnouncements(),
-      loadMyPlots(),
-    ]);
+    await Promise.all([loadAnnouncements(), loadMyPlots()]);
     setRefreshing(false);
   };
 
@@ -120,18 +117,18 @@ const CustomerDashboardScreen: React.FC = () => {
   };
 
   const formatDate = () => {
-    return currentTime.toLocaleDateString('en-PH', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return currentTime.toLocaleDateString('en-PH', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
   const formatTime = () => {
-    return currentTime.toLocaleTimeString('en-PH', { 
-      hour: '2-digit', 
-      minute: '2-digit'
+    return currentTime.toLocaleTimeString('en-PH', {
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -142,20 +139,16 @@ const CustomerDashboardScreen: React.FC = () => {
         await AuthService.logout();
       }
     } else {
-      Alert.alert(
-        'Logout',
-        'Are you sure you want to logout?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Logout',
-            onPress: async () => {
-              await AuthService.logout();
-              // Navigation will be handled automatically
-            },
+      Alert.alert('Logout', 'Are you sure you want to logout?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          onPress: async () => {
+            await AuthService.logout();
+            // Navigation will be handled automatically
           },
-        ]
-      );
+        },
+      ]);
     }
   };
 
@@ -203,22 +196,23 @@ const CustomerDashboardScreen: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.greeting}>{getGreeting()},</Text>
         <Text style={styles.headerTitle}>{user?.name || 'Visitor'}!</Text>
-        <Text style={styles.headerSubtitle}>Himlayang Pilipino Memorial Park</Text>
+        <Text style={styles.headerSubtitle}>
+          Himlayang Pilipino Memorial Park
+        </Text>
         <Text style={styles.dateTime}>{formatDate()}</Text>
         <Text style={styles.time}>{formatTime()}</Text>
       </View>
 
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+        }>
         {/* My Plots Section */}
         {myPlots.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>My Plots</Text>
-            {myPlots.slice(0, 3).map((plot) => (
+            {myPlots.slice(0, 3).map(plot => (
               <View key={plot.id} style={styles.plotCard}>
                 <Text style={styles.plotNumber}>{plot.plot_number}</Text>
                 <Text style={styles.plotSection}>Section: {plot.section}</Text>
@@ -234,7 +228,7 @@ const CustomerDashboardScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.menuContainer}>
-            {menuItems.map((item) => (
+            {menuItems.map(item => (
               <TouchableOpacity
                 key={item.id}
                 style={styles.menuCard}
@@ -254,17 +248,26 @@ const CustomerDashboardScreen: React.FC = () => {
         {/* Announcements Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Latest Announcements</Text>
-          {announcements.slice(0, 3).map((announcement) => (
+          {announcements.slice(0, 3).map(announcement => (
             <View key={announcement.id} style={styles.announcementCard}>
-              <View style={[styles.announcementBadge, 
-                { backgroundColor: announcement.type === 'important' ? colors.error : colors.info }
-              ]}>
+              <View
+                style={[
+                  styles.announcementBadge,
+                  {
+                    backgroundColor:
+                      announcement.type === 'important'
+                        ? colors.error
+                        : colors.info,
+                  },
+                ]}>
                 <Text style={styles.announcementBadgeText}>
                   {announcement.type?.toUpperCase() || 'GENERAL'}
                 </Text>
               </View>
               <Text style={styles.announcementTitle}>{announcement.title}</Text>
-              <Text style={styles.announcementContent}>{announcement.content}</Text>
+              <Text style={styles.announcementContent}>
+                {announcement.content}
+              </Text>
               <Text style={styles.announcementDate}>{announcement.date}</Text>
             </View>
           ))}

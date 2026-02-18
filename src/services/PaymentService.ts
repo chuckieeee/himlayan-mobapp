@@ -1,6 +1,6 @@
 /**
  * PaymentService - Placeholder for future payment integration
- * 
+ *
  * Note: The current database schema does not include payment tables.
  * This service is kept for compatibility with existing screens
  * and can be extended when payment features are implemented.

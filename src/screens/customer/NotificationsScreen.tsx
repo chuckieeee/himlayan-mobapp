@@ -29,7 +29,9 @@ const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+  const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>(
+    'all'
+  );
 
   useEffect(() => {
     loadAnnouncements();
@@ -75,9 +77,10 @@ const NotificationsScreen: React.FC = () => {
     }
   };
 
-  const filteredAnnouncements = filter === 'all' 
-    ? announcements 
-    : announcements.filter(a => a.priority === filter);
+  const filteredAnnouncements =
+    filter === 'all'
+      ? announcements
+      : announcements.filter(a => a.priority === filter);
 
   if (loading) {
     return (
@@ -98,33 +101,61 @@ const NotificationsScreen: React.FC = () => {
         {/* Filter Buttons */}
         <View style={styles.filterContainer}>
           <TouchableOpacity
-            style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              filter === 'all' && styles.filterButtonActive,
+            ]}
             onPress={() => setFilter('all')}>
-            <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
+            <Text
+              style={[
+                styles.filterText,
+                filter === 'all' && styles.filterTextActive,
+              ]}>
               All ({announcements.length})
             </Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
-            style={[styles.filterButton, filter === 'high' && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              filter === 'high' && styles.filterButtonActive,
+            ]}
             onPress={() => setFilter('high')}>
-            <Text style={[styles.filterText, filter === 'high' && styles.filterTextActive]}>
+            <Text
+              style={[
+                styles.filterText,
+                filter === 'high' && styles.filterTextActive,
+              ]}>
               🔴 High
             </Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
-            style={[styles.filterButton, filter === 'medium' && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              filter === 'medium' && styles.filterButtonActive,
+            ]}
             onPress={() => setFilter('medium')}>
-            <Text style={[styles.filterText, filter === 'medium' && styles.filterTextActive]}>
+            <Text
+              style={[
+                styles.filterText,
+                filter === 'medium' && styles.filterTextActive,
+              ]}>
               🟡 Medium
             </Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
-            style={[styles.filterButton, filter === 'low' && styles.filterButtonActive]}
+            style={[
+              styles.filterButton,
+              filter === 'low' && styles.filterButtonActive,
+            ]}
             onPress={() => setFilter('low')}>
-            <Text style={[styles.filterText, filter === 'low' && styles.filterTextActive]}>
+            <Text
+              style={[
+                styles.filterText,
+                filter === 'low' && styles.filterTextActive,
+              ]}>
               🔵 Low
             </Text>
           </TouchableOpacity>
@@ -140,7 +171,7 @@ const NotificationsScreen: React.FC = () => {
             </Text>
           </View>
         ) : (
-          filteredAnnouncements.map((announcement) => (
+          filteredAnnouncements.map(announcement => (
             <View
               key={announcement.id}
               style={[
@@ -163,7 +194,9 @@ const NotificationsScreen: React.FC = () => {
                 <View
                   style={[
                     styles.priorityBadge,
-                    { backgroundColor: getPriorityColor(announcement.priority) },
+                    {
+                      backgroundColor: getPriorityColor(announcement.priority),
+                    },
                   ]}>
                   <Text style={styles.priorityText}>
                     {announcement.priority?.toUpperCase() || 'INFO'}

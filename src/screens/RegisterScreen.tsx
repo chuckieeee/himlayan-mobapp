@@ -18,7 +18,10 @@ import api from '@services/api';
 import { colors, spacing, typography } from '@styles/theme';
 import { commonStyles } from '@styles/commonStyles';
 
-type RegisterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+type RegisterScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'Login'
+>;
 
 const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<RegisterScreenNavigationProp>();
@@ -28,7 +31,7 @@ const RegisterScreen: React.FC = () => {
     email: '',
     birthday: '',
     password: '',
-    password_confirmation: ''
+    password_confirmation: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -39,13 +42,13 @@ const RegisterScreen: React.FC = () => {
   const handleChange = (field: string, value: string) => {
     setFormData({
       ...formData,
-      [field]: value
+      [field]: value,
     });
   };
 
   const handleDateChange = (event: any, date?: Date) => {
     setShowDatePicker(Platform.OS === 'ios'); // Keep open on iOS
-    
+
     if (date) {
       setSelectedDate(date);
       const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -55,7 +58,12 @@ const RegisterScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     // Validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.password
+    ) {
       Alert.alert('Validation Error', 'Please fill in all required fields');
       return;
     }
@@ -77,30 +85,30 @@ const RegisterScreen: React.FC = () => {
         name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         password: formData.password,
-        password_confirmation: formData.password_confirmation
+        password_confirmation: formData.password_confirmation,
       };
-      
+
       const result = await api.post('/register', submitData);
-      
+
       if (result.success) {
-        Alert.alert(
-          'Success!',
-          'Registration successful! Please login.',
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.navigate('Login')
-            }
-          ]
-        );
+        Alert.alert('Success!', 'Registration successful! Please login.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ]);
       } else {
-        Alert.alert('Registration Failed', result.message || 'Please try again');
+        Alert.alert(
+          'Registration Failed',
+          result.message || 'Please try again'
+        );
       }
     } catch (err: any) {
       console.error('Registration error:', err);
       Alert.alert(
         'Registration Failed',
-        err.message || 'An error occurred during registration. Please try again.'
+        err.message ||
+          'An error occurred during registration. Please try again.'
       );
     } finally {
       setLoading(false);
@@ -108,10 +116,9 @@ const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.logoContainer}>
           <View style={styles.logoPlaceholder}>
@@ -130,7 +137,7 @@ const RegisterScreen: React.FC = () => {
                 style={commonStyles.input}
                 placeholder="First Name"
                 value={formData.firstName}
-                onChangeText={(value) => handleChange('firstName', value)}
+                onChangeText={value => handleChange('firstName', value)}
                 autoCapitalize="words"
               />
             </View>
@@ -140,7 +147,7 @@ const RegisterScreen: React.FC = () => {
                 style={commonStyles.input}
                 placeholder="Last Name"
                 value={formData.lastName}
-                onChangeText={(value) => handleChange('lastName', value)}
+                onChangeText={value => handleChange('lastName', value)}
                 autoCapitalize="words"
               />
             </View>
@@ -154,7 +161,7 @@ const RegisterScreen: React.FC = () => {
                 style={commonStyles.input}
                 placeholder="email@example.com"
                 value={formData.email}
-                onChangeText={(value) => handleChange('email', value)}
+                onChangeText={value => handleChange('email', value)}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 autoComplete="email"
@@ -162,11 +169,13 @@ const RegisterScreen: React.FC = () => {
             </View>
             <View style={styles.halfWidth}>
               <Text style={styles.label}>Birthday</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[commonStyles.input, styles.datePickerButton]}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Text style={formData.birthday ? styles.dateText : styles.datePlaceholder}>
+                onPress={() => setShowDatePicker(true)}>
+                <Text
+                  style={
+                    formData.birthday ? styles.dateText : styles.datePlaceholder
+                  }>
                   {formData.birthday || 'Select Date'}
                 </Text>
               </TouchableOpacity>
@@ -191,15 +200,14 @@ const RegisterScreen: React.FC = () => {
                   style={[commonStyles.input, styles.passwordInput]}
                   placeholder="Password"
                   value={formData.password}
-                  onChangeText={(value) => handleChange('password', value)}
+                  onChangeText={value => handleChange('password', value)}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                   autoComplete="password-new"
                 />
                 <TouchableOpacity
                   style={styles.passwordToggle}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
+                  onPress={() => setShowPassword(!showPassword)}>
                   <Text style={styles.passwordToggleText}>
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </Text>
@@ -213,15 +221,16 @@ const RegisterScreen: React.FC = () => {
                   style={[commonStyles.input, styles.passwordInput]}
                   placeholder="Confirm Password"
                   value={formData.password_confirmation}
-                  onChangeText={(value) => handleChange('password_confirmation', value)}
+                  onChangeText={value =>
+                    handleChange('password_confirmation', value)
+                  }
                   secureTextEntry={!showConfirmPassword}
                   autoCapitalize="none"
                   autoComplete="password-new"
                 />
                 <TouchableOpacity
                   style={styles.passwordToggle}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
                   <Text style={styles.passwordToggleText}>
                     {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
                   </Text>
@@ -234,8 +243,7 @@ const RegisterScreen: React.FC = () => {
           <TouchableOpacity
             style={[commonStyles.button, loading && styles.buttonDisabled]}
             onPress={handleSubmit}
-            disabled={loading}
-          >
+            disabled={loading}>
             <Text style={commonStyles.buttonText}>
               {loading ? 'Creating Account...' : 'Register Account'}
             </Text>
@@ -253,7 +261,8 @@ const RegisterScreen: React.FC = () => {
           <View style={styles.infoContainer}>
             <Text style={styles.infoTitle}>📱 Mobile App Registration</Text>
             <Text style={styles.infoText}>
-              Create a customer account to access cemetery navigation and services.
+              Create a customer account to access cemetery navigation and
+              services.
             </Text>
             <Text style={styles.infoText}>
               All fields marked with * are required.

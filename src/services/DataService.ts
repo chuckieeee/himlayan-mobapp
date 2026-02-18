@@ -22,7 +22,10 @@ export class DataService {
   /**
    * Get all plots with pagination
    */
-  static async getAllPlots(page: number = 1, perPage: number = 50): Promise<PaginatedResponse<Plot>> {
+  static async getAllPlots(
+    page: number = 1,
+    perPage: number = 50
+  ): Promise<PaginatedResponse<Plot>> {
     try {
       const response = await apiRequest<PaginatedResponse<Plot>>(
         `${API_ENDPOINTS.PLOTS}?page=${page}&per_page=${perPage}`
@@ -54,13 +57,10 @@ export class DataService {
    */
   static async createPlot(data: CreatePlotRequest): Promise<Plot> {
     try {
-      const response = await apiRequest<{ data: Plot }>(
-        API_ENDPOINTS.PLOTS,
-        {
-          method: 'POST',
-          body: data,
-        }
-      );
+      const response = await apiRequest<{ data: Plot }>(API_ENDPOINTS.PLOTS, {
+        method: 'POST',
+        body: data,
+      });
       console.log('✅ Plot created:', response.data.plot_number);
       return response.data;
     } catch (error) {
@@ -260,7 +260,10 @@ export class DataService {
       }>(`${API_ENDPOINTS.BURIAL_RECORDS}/statistics`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching burial statistics:', getErrorMessage(error));
+      console.error(
+        'Error fetching burial statistics:',
+        getErrorMessage(error)
+      );
       throw error;
     }
   }

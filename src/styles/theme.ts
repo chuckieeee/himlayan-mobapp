@@ -45,15 +45,15 @@ export const colors = {
   success: '#10b981',
   successLight: '#d1fae5',
   successDark: '#059669',
-  
+
   warning: '#f59e0b',
   warningLight: '#fef3c7',
   warningDark: '#d97706',
-  
+
   error: '#ef4444',
   errorLight: '#fee2e2',
   errorDark: '#dc2626',
-  
+
   info: '#3b82f6',
   infoLight: '#dbeafe',
   infoDark: '#2563eb',
@@ -144,7 +144,7 @@ export const shadows = {
   medium: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.20,
+    shadowOpacity: 0.2,
     shadowRadius: 2.5,
     elevation: 3,
   },

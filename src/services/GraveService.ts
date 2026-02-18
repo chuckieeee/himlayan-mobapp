@@ -46,7 +46,9 @@ export class GraveService {
   /**
    * Search graves by plot number
    */
-  static async searchGravesByPlotNumber(plotNumber: string): Promise<GraveDetails[]> {
+  static async searchGravesByPlotNumber(
+    plotNumber: string
+  ): Promise<GraveDetails[]> {
     try {
       const response = await apiRequest<SearchResponse>(
         `${API_ENDPOINTS.SEARCH_BY_PLOT}?query=${encodeURIComponent(plotNumber)}`
@@ -61,7 +63,9 @@ export class GraveService {
   /**
    * Alias for searchGravesByPlotNumber (for backward compatibility)
    */
-  static async searchGravesByLotNumber(lotNumber: string): Promise<GraveDetails[]> {
+  static async searchGravesByLotNumber(
+    lotNumber: string
+  ): Promise<GraveDetails[]> {
     return this.searchGravesByPlotNumber(lotNumber);
   }
 

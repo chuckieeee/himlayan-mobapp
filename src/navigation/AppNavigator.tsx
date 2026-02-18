@@ -4,14 +4,12 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { AuthService } from '@services/AuthService';
 import type { User } from '@/types/database';
 
-
 // Import screens
 import LoginScreen from '@screens/LoginScreen';
 import RegisterScreen from '@screens/RegisterScreen';
 import GraveDetailsScreen from '@screens/customer/GraveDetailsScreen';
 import GoogleMaps from '@screens/customer/GoogleMaps';
 import GraveMapScreen from '@screens/customer/GraveMapScreen';
-
 
 // Import bottom tab navigator
 import BottomTabNavigator from './BottomTabNavigator';
@@ -26,25 +24,30 @@ const AppNavigator: React.FC = () => {
 
   useEffect(() => {
     checkAuthStatus();
-    
+
     // Check auth status every 500ms to detect login/logout
     const interval = setInterval(checkAuthStatus, 500);
-    
+
     return () => clearInterval(interval);
   }, []);
 
   const checkAuthStatus = async () => {
     const currentUser = await AuthService.getCurrentUser();
-    
+
     // ⚠️ SECURITY: Block admin/staff from navigation
-    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) {
-      console.log('🚫 Security: Admin/Staff detected in navigation, logging out');
+    if (
+      currentUser &&
+      (currentUser.role === 'admin' || currentUser.role === 'staff')
+    ) {
+      console.log(
+        '🚫 Security: Admin/Staff detected in navigation, logging out'
+      );
       await AuthService.clearAuthData();
       setUser(null);
     } else {
       setUser(currentUser);
     }
-    
+
     setLoading(false);
   };
 

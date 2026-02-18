@@ -24,7 +24,7 @@ const GraveDetailsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<GraveDetailsRouteProp>();
   const { graveId } = route.params;
-  
+
   const [grave, setGrave] = useState<Grave | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,53 +32,52 @@ const GraveDetailsScreen: React.FC = () => {
     loadGraveDetails();
   }, [graveId]);
 
-const loadGraveDetails = async () => {
-  setLoading(true);
+  const loadGraveDetails = async () => {
+    setLoading(true);
 
-  const apiGrave = await GraveService.getGraveById(graveId);
+    const apiGrave = await GraveService.getGraveById(graveId);
 
-  if (!apiGrave) {
-    setGrave(null);
-    setLoading(false);
-    return;
-  }
+    if (!apiGrave) {
+      setGrave(null);
+      setLoading(false);
+      return;
+    }
 
-  // convert backend → UI format
-  const mappedGrave: Grave = {
-    deceasedName: apiGrave.deceased_name,
-    section: apiGrave.plot.section,
-    lotNumber: apiGrave.plot.plot_number,
-    birthDate: apiGrave.birth_date,
-    deathDate: apiGrave.death_date,
-    burialDate: apiGrave.burial_date,
-    familyContact: apiGrave.contact_name,
-    qrCode: apiGrave.qr_code?.code ?? "N/A",
+    // convert backend → UI format
+    const mappedGrave: Grave = {
+      deceasedName: apiGrave.deceased_name,
+      section: apiGrave.plot.section,
+      lotNumber: apiGrave.plot.plot_number,
+      birthDate: apiGrave.birth_date,
+      deathDate: apiGrave.death_date,
+      burialDate: apiGrave.burial_date,
+      familyContact: apiGrave.contact_name,
+      qrCode: apiGrave.qr_code?.code ?? 'N/A',
 
-    location: {
-      latitude: Number(apiGrave.plot.latitude),
-      longitude: Number(apiGrave.plot.longitude),
-    },
-  };
-
-  console.log("Mapped grave:", mappedGrave);
-
-  setGrave(mappedGrave);
-  setLoading(false);
-};
-
-    const handleNavigate = () => {
-      if (!grave) return;
-
-      navigation.navigate("GraveMap", {
-        plot: {
-          latitude: grave.location.latitude,
-          longitude: grave.location.longitude,
-          plot_number: grave.lotNumber,
-          section: grave.section,
-        },
-      });
+      location: {
+        latitude: Number(apiGrave.plot.latitude),
+        longitude: Number(apiGrave.plot.longitude),
+      },
     };
 
+    console.log('Mapped grave:', mappedGrave);
+
+    setGrave(mappedGrave);
+    setLoading(false);
+  };
+
+  const handleNavigate = () => {
+    if (!grave) return;
+
+    navigation.navigate('GraveMap', {
+      plot: {
+        latitude: grave.location.latitude,
+        longitude: grave.location.longitude,
+        plot_number: grave.lotNumber,
+        section: grave.section,
+      },
+    });
+  };
 
   if (loading) {
     return (
@@ -101,18 +100,18 @@ const loadGraveDetails = async () => {
     );
   }
 
-      // ✅ Contact display logic
-      const displayContact = grave.familyContact || "Family Representative";
+  // ✅ Contact display logic
+  const displayContact = grave.familyContact || 'Family Representative';
 
   const formatDate = (isoDate?: string) => {
-    if (!isoDate) return "—";
+    if (!isoDate) return '—';
 
     const date = new Date(isoDate);
 
     return date.toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
@@ -120,7 +119,9 @@ const loadGraveDetails = async () => {
     <View style={commonStyles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Grave Details</Text>
@@ -136,49 +137,43 @@ const loadGraveDetails = async () => {
           </View>
         </View>
 
-    {/* Details Card */}
-    <View style={commonStyles.card}>
-      <Text style={styles.sectionTitle}>Information</Text>
+        {/* Details Card */}
+        <View style={commonStyles.card}>
+          <Text style={styles.sectionTitle}>Information</Text>
 
-      <View style={styles.detailRow}>
-        <Text style={styles.detailLabel}>Lot Number:</Text>
-        <Text style={styles.detailValue}>
-          {grave.lotNumber}
-        </Text>
-      </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Lot Number:</Text>
+            <Text style={styles.detailValue}>{grave.lotNumber}</Text>
+          </View>
 
-      <View style={styles.detailRow}>
-        <Text style={styles.detailLabel}>Birth Date:</Text>
-        <Text style={styles.detailValue}>
-          {formatDate(grave.birthDate)}
-        </Text>
-      </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Birth Date:</Text>
+            <Text style={styles.detailValue}>
+              {formatDate(grave.birthDate)}
+            </Text>
+          </View>
 
-      <View style={styles.detailRow}>
-        <Text style={styles.detailLabel}>Death Date:</Text>
-        <Text style={styles.detailValue}>
-          {formatDate(grave.deathDate)}
-        </Text>
-      </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Death Date:</Text>
+            <Text style={styles.detailValue}>
+              {formatDate(grave.deathDate)}
+            </Text>
+          </View>
 
-      <View style={styles.detailRow}>
-        <Text style={styles.detailLabel}>Burial Date:</Text>
-        <Text style={styles.detailValue}>
-          {formatDate(grave.burialDate)}
-        </Text>
-      </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Burial Date:</Text>
+            <Text style={styles.detailValue}>
+              {formatDate(grave.burialDate)}
+            </Text>
+          </View>
 
-      {displayContact && (
-      <View style={styles.detailRow}>
-        <Text style={styles.detailLabel}>Contact:</Text>
-        <Text style={styles.detailValue}>
-          {displayContact}
-        </Text>
-      </View>
-
-      )}
-    </View>
-
+          {displayContact && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Contact:</Text>
+              <Text style={styles.detailValue}>{displayContact}</Text>
+            </View>
+          )}
+        </View>
 
         {/* Location Card */}
         <View style={commonStyles.card}>
@@ -192,12 +187,10 @@ const loadGraveDetails = async () => {
               latitudeDelta: 0.002,
               longitudeDelta: 0.002,
             }}
-
             scrollEnabled={false}
             zoomEnabled={false}
             pitchEnabled={false}
-            rotateEnabled={false}
-          >
+            rotateEnabled={false}>
             <Marker
               coordinate={{
                 latitude: grave.location.latitude,
@@ -209,21 +202,16 @@ const loadGraveDetails = async () => {
           </MapView>
 
           <Text style={styles.coordinatesText}>
-            {grave.location.latitude.toFixed(4)},{" "}
+            {grave.location.latitude.toFixed(4)},{' '}
             {grave.location.longitude.toFixed(4)}
           </Text>
 
           <TouchableOpacity
             style={[commonStyles.button, styles.navigateButton]}
-            onPress={handleNavigate}
-          >
-            <Text style={commonStyles.buttonText}>
-              📍 Navigate to Location
-            </Text>
+            onPress={handleNavigate}>
+            <Text style={commonStyles.buttonText}>📍 Navigate to Location</Text>
           </TouchableOpacity>
         </View>
-
-
       </ScrollView>
     </View>
   );
@@ -367,11 +355,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   previewMap: {
-  height: 200,
-  borderRadius: 8,
-  marginBottom: spacing.md,
+    height: 200,
+    borderRadius: 8,
+    marginBottom: spacing.md,
   },
-
 });
 
 export default GraveDetailsScreen;

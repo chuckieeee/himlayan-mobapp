@@ -2,9 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Base URL for the API - Update this to your actual backend URL
-export const API_BASE_URL =
-  "https://malty-kandice-unwinded.ngrok-free.dev/api";
-
+export const API_BASE_URL = 'https://malty-kandice-unwinded.ngrok-free.dev/api';
 
 // Storage keys
 export const STORAGE_KEYS = {
@@ -19,33 +17,33 @@ export const API_ENDPOINTS = {
   LOGOUT: '/logout',
   REGISTER: '/register',
   ME: '/user',
-  
+
   // Plots
   PLOTS: '/plots',
   PLOT_BY_ID: (id: number) => `/plots/${id}`,
   PLOT_SUMMARY: '/plots',
   PLOT_AVAILABLE: '/plots/available',
   PLOT_STATISTICS: '/plots/statistics',
-  
+
   // Burial Records
   BURIAL_RECORDS: '/burial-records',
   BURIAL_RECORD_BY_ID: (id: number) => `/burial-records/${id}`,
   BURIAL_RECORD_SEARCH: '/burial-records/search',
   BURIAL_RECORD_STATISTICS: '/burial-records/statistics',
-  
+
   // QR Codes
   QR_CODES: '/qr-codes',
   QR_CODE_BY_CODE: (code: string) => `/qr-codes/${code}`,
   QR_CODE_GENERATE: (burialId: number) => `/qr-codes/generate/${burialId}`,
-  
+
   // Search
   SEARCH: '/public/search',
   SEARCH_BY_NAME: '/public/search',
   SEARCH_BY_PLOT: '/public/search',
-  
+
   // Public
   PUBLIC_GRAVE: (code: string) => `/public/grave/${code}`,
-  
+
   // Dashboard
   DASHBOARD: '/dashboard',
 };
@@ -68,17 +66,12 @@ export async function apiRequest<T>(
   endpoint: string,
   options: APIRequestOptions = {}
 ): Promise<T> {
-  const {
-    method = 'GET',
-    headers = {},
-    body,
-    requiresAuth = true,
-  } = options;
+  const { method = 'GET', headers = {}, body, requiresAuth = true } = options;
 
   // Build request headers
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
     ...headers,
   };
 
@@ -103,7 +96,7 @@ export async function apiRequest<T>(
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    
+
     // Handle non-JSON responses
     const contentType = response.headers.get('content-type');
     if (!contentType?.includes('application/json')) {
@@ -138,14 +131,14 @@ export function getErrorMessage(error: any): string {
   if (error.message) {
     return error.message;
   }
-  
+
   if (error.errors && typeof error.errors === 'object') {
     const firstError = Object.values(error.errors)[0];
     if (Array.isArray(firstError) && firstError.length > 0) {
       return firstError[0] as string;
     }
   }
-  
+
   return 'An unexpected error occurred. Please try again.';
 }
 

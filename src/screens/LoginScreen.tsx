@@ -18,7 +18,10 @@ import { getErrorMessage } from '@/config/api';
 import { colors, spacing, typography } from '@styles/theme';
 import { commonStyles } from '@styles/commonStyles';
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Register'>;
+type LoginScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'Register'
+>;
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
@@ -39,12 +42,16 @@ const LoginScreen: React.FC = () => {
       console.log('✅ Logged in successfully:', user.name);
     } catch (error: any) {
       console.error('Login error:', error);
-      
+
       // Special handling for role restriction errors
-      if (error.code === 'ROLE_NOT_ALLOWED' || error.message?.includes('not supported on the mobile app')) {
+      if (
+        error.code === 'ROLE_NOT_ALLOWED' ||
+        error.message?.includes('not supported on the mobile app')
+      ) {
         Alert.alert(
           '🚫 Access Denied',
-          error.message || 'Staff and Admin accounts are not supported on the mobile app. Please use the web system.',
+          error.message ||
+            'Staff and Admin accounts are not supported on the mobile app. Please use the web system.',
           [{ text: 'OK', style: 'default' }]
         );
       } else {
@@ -77,7 +84,6 @@ const LoginScreen: React.FC = () => {
             keyboardType="email-address"
             autoComplete="email"
           />
-          
 
           <Text style={styles.label}>Password</Text>
           <TextInput
@@ -88,24 +94,24 @@ const LoginScreen: React.FC = () => {
             secureTextEntry
             autoComplete="password"
           />
-          </View>
+        </View>
 
-          <TouchableOpacity
-            style={[commonStyles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}>
-            <Text style={commonStyles.buttonText}>
-              {loading ? 'Logging in...' : 'Login'}
-            </Text>
+        <TouchableOpacity
+          style={[commonStyles.button, loading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={loading}>
+          <Text style={commonStyles.buttonText}>
+            {loading ? 'Logging in...' : 'Login'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Register Link */}
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <Text style={styles.registerLink}>Sign up</Text>
           </TouchableOpacity>
-
-          {/* Register Link */}
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.registerLink}>Sign up</Text>
-            </TouchableOpacity>
-          </View>
+        </View>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Version 1.0.0</Text>

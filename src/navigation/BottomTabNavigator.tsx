@@ -34,10 +34,9 @@ const BottomTabNavigator: React.FC = () => {
           fontSize: 12,
           fontWeight: '500',
         },
-      }}
-    >
-      <Tab.Screen 
-        name="Dashboard" 
+      }}>
+      <Tab.Screen
+        name="Dashboard"
         component={CustomerDashboardScreen}
         options={{
           tabBarLabel: 'Home',
@@ -46,8 +45,8 @@ const BottomTabNavigator: React.FC = () => {
           ),
         }}
       />
-      <Tab.Screen 
-        name="Search" 
+      <Tab.Screen
+        name="Search"
         component={GraveSearchScreen}
         options={{
           tabBarLabel: 'Search',
@@ -56,8 +55,8 @@ const BottomTabNavigator: React.FC = () => {
           ),
         }}
       />
-      <Tab.Screen 
-        name="Scanner" 
+      <Tab.Screen
+        name="Scanner"
         component={QRScannerScreen}
         options={{
           tabBarLabel: 'QR Scan',
@@ -66,8 +65,8 @@ const BottomTabNavigator: React.FC = () => {
           ),
         }}
       />
-      <Tab.Screen 
-        name="Payments" 
+      <Tab.Screen
+        name="Payments"
         component={PaymentsScreen}
         options={{
           tabBarLabel: 'Payments',
@@ -76,8 +75,8 @@ const BottomTabNavigator: React.FC = () => {
           ),
         }}
       />
-      <Tab.Screen 
-        name="Profile" 
+      <Tab.Screen
+        name="Profile"
         component={NotificationsScreen}
         options={{
           tabBarLabel: 'Alerts',
@@ -86,12 +85,14 @@ const BottomTabNavigator: React.FC = () => {
           ),
         }}
       />
-      <Tab.Screen 
-        name="Map" 
-        component={GoogleMaps} 
+      <Tab.Screen
+        name="Map"
+        component={GoogleMaps}
         options={{
           tabBarLabel: 'Map',
-          tabBarIcon: ({ focused }) => <Text style={{ fontSize: 24 }}>{focused ? '🗺️' : '🗺'}</Text>
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 24 }}>{focused ? '🗺️' : '🗺'}</Text>
+          ),
         }}
       />
     </Tab.Navigator>
