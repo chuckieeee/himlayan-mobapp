@@ -1,54 +1,93 @@
-/**
- * PaymentService - Placeholder for future payment integration
- *
- * Note: The current database schema does not include payment tables.
- * This service is kept for compatibility with existing screens
- * and can be extended when payment features are implemented.
- */
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const API_URL = "https://himlayangpilipino.com/api";
 
 export interface Payment {
-  id: string;
-  userId: string;
-  type: 'burial' | 'reservation' | 'maintenance';
+  id: number;
   amount: number;
-  status: 'paid' | 'pending' | 'overdue';
-  dueDate: string;
-  description: string;
+  payment_type: string;
+  payment_method: string;
+  status: "pending" | "verified" | "rejected";
+  reference_number?: string;
+  created_at?: string;
 }
 
 export class PaymentService {
-  /**
-   * Get payments for a user
-   * @deprecated Payment functionality not yet implemented in backend
-   */
-  static async getUserPayments(userId: string): Promise<Payment[]> {
-    console.warn('PaymentService: Payment functionality not yet implemented');
+
+  static async getUserPayments(): Promise<Payment[]> {
+    const token = await AsyncStorage.getItem("auth_token");
+
+    const response = await fetch(`${API_URL}/payments`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const text = await response.text();
+    console.log("PAYMENTS RAW:", text);
+
+    const data = JSON.parse(text);
+
+    if (data.success) {
+      return data.data;
+    }
+
     return [];
   }
 
-  /**
-   * Get payment balance summary
-   * @deprecated Payment functionality not yet implemented in backend
-   */
-  static async getPaymentSummary(userId: string): Promise<{
-    totalPaid: number;
-    totalPending: number;
-    totalOverdue: number;
-  }> {
-    console.warn('PaymentService: Payment functionality not yet implemented');
-    return {
-      totalPaid: 0,
-      totalPending: 0,
-      totalOverdue: 0,
-    };
+  static async createXenditPayment(
+    amount: number,
+    paymentType: string,
+    paymentMethod: string = "gcash"
+  ) {
+    const token = await AsyncStorage.getItem("auth_token");
+
+    const response = await fetch(`${API_URL}/payments/xendit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        amount,
+        payment_type: paymentType,
+        payment_method: paymentMethod,
+      }),
+    });
+
+    const text = await response.text();
+    console.log("XENDIT RAW RESPONSE:", text);
+
+    return JSON.parse(text);
   }
 
-  /**
-   * Process a payment
-   * @deprecated Payment functionality not yet implemented in backend
-   */
-  static async processPayment(paymentId: string): Promise<boolean> {
-    console.warn('PaymentService: Payment functionality not yet implemented');
-    return false;
+  static async getPaymentSummary() {
+    const payments = await this.getUserPayments();
+
+    let totalPaid = 0;
+    let totalPending = 0;
+    let totalOverdue = 0;
+
+    payments.forEach(payment => {
+      const amount = Number(payment.amount);
+
+      if (payment.status === "verified") {
+        totalPaid += amount;
+      }
+
+      if (payment.status === "pending") {
+        totalPending += amount;
+      }
+    });
+
+    return {
+      totalPaid,
+      totalPending,
+      totalOverdue,
+    };
   }
 }

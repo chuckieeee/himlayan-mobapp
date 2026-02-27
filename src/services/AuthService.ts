@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '@/config/api';
 import type { User } from '@/types/database';
 import { API_BASE_URL } from '@/config/api';
-
+console.log("CURRENT API BASE URL:", API_BASE_URL);
 export class AuthService {
   static async login(email: string, password: string): Promise<User> {
     console.log('Attempting API login for:', email);
@@ -17,13 +17,20 @@ export class AuthService {
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    console.log("RAW LOGIN RESPONSE:");
+    console.log(text);
 
-    console.log('LOGIN RESPONSE:', data); // debug
+    let data;
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Login failed');
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.log("❌ Response is NOT JSON");
+      throw new Error("Server returned non-JSON response");
     }
+
+console.log("LOGIN RESPONSE:", data);
 
     // ✅ FIX — read correct Laravel structure
     const user = data.data?.user;

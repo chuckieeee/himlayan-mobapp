@@ -1,19 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS } from '@/config/api';
+import { STORAGE_KEYS, API_BASE_URL } from '@/config/api';
 
-const API_BASE_URL = 'https://malty-kandice-unwinded.ngrok-free.dev/api';
 const AUTH_TOKEN_KEY = STORAGE_KEYS.AUTH_TOKEN;
 
-interface ApiResponse<T = any> {
+export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   message?: string;
 }
 
 class ApiClient {
+
   private async getHeaders(): Promise<HeadersInit> {
     const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
-    console.log('🔑 Stored token:', token);
+
     return {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -21,44 +21,75 @@ class ApiClient {
     };
   }
 
+  private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
+    const text = await response.text();
+
+    let data: any;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error('❌ Non-JSON response from server:', text);
+      return { success: false, message: 'Server returned invalid response' };
+    }
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data.message || 'Request failed',
+      };
+    }
+
+    return data;
+  }
+
   async get<T = any>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const headers = await this.getHeaders();
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'GET',
         headers,
       });
-      return await response.json();
+
+      return await this.handleResponse<T>(response);
+
     } catch (error) {
       console.error('API GET Error:', error);
       return { success: false, message: 'Network error' };
     }
   }
 
-  async post<T = any>(endpoint: string, data: any): Promise<ApiResponse<T>> {
+  async post<T = any>(endpoint: string, body: any): Promise<ApiResponse<T>> {
     try {
       const headers = await this.getHeaders();
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers,
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
       });
-      return await response.json();
+
+      return await this.handleResponse<T>(response);
+
     } catch (error) {
       console.error('API POST Error:', error);
       return { success: false, message: 'Network error' };
     }
   }
 
-  async put<T = any>(endpoint: string, data: any): Promise<ApiResponse<T>> {
+  async put<T = any>(endpoint: string, body: any): Promise<ApiResponse<T>> {
     try {
       const headers = await this.getHeaders();
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
       });
-      return await response.json();
+
+      return await this.handleResponse<T>(response);
+
     } catch (error) {
       console.error('API PUT Error:', error);
       return { success: false, message: 'Network error' };
@@ -68,11 +99,14 @@ class ApiClient {
   async delete<T = any>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const headers = await this.getHeaders();
+
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'DELETE',
         headers,
       });
-      return await response.json();
+
+      return await this.handleResponse<T>(response);
+
     } catch (error) {
       console.error('API DELETE Error:', error);
       return { success: false, message: 'Network error' };

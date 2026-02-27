@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -23,27 +22,25 @@ type GraveDetailsRouteProp = RouteProp<RootStackParamList, 'GraveDetails'>;
 const GraveDetailsScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<GraveDetailsRouteProp>();
-  const { graveId } = route.params;
+
+  const { graveId, burialRecord } = route.params as any;
 
   const [grave, setGrave] = useState<Grave | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadGraveDetails();
-  }, [graveId]);
-
-  const loadGraveDetails = async () => {
-    setLoading(true);
-
-    const apiGrave = await GraveService.getGraveById(graveId);
-
-    if (!apiGrave) {
-      setGrave(null);
+    if (burialRecord) {
+      // QR flow (already has data)
+      mapAndSetGrave(burialRecord);
+    } else if (graveId) {
+      // Search flow (needs fetch)
+      loadGraveDetails();
+    } else {
       setLoading(false);
-      return;
     }
+  }, [graveId, burialRecord]);
 
-    // convert backend → UI format
+  const mapAndSetGrave = (apiGrave: any) => {
     const mappedGrave: Grave = {
       deceasedName: apiGrave.deceased_name,
       section: apiGrave.plot.section,
@@ -64,6 +61,20 @@ const GraveDetailsScreen: React.FC = () => {
 
     setGrave(mappedGrave);
     setLoading(false);
+  };
+
+  const loadGraveDetails = async () => {
+    setLoading(true);
+
+    const apiGrave = await GraveService.getGraveById(graveId);
+
+    if (!apiGrave) {
+      setGrave(null);
+      setLoading(false);
+      return;
+    }
+
+    mapAndSetGrave(apiGrave);
   };
 
   const handleNavigate = () => {
@@ -93,21 +104,17 @@ const GraveDetailsScreen: React.FC = () => {
         <Text style={styles.errorText}>Grave not found</Text>
         <TouchableOpacity
           style={commonStyles.button}
-          onPress={() => navigation.goBack()}>
+          onPress={() => navigation.goBack()}
+        >
           <Text style={commonStyles.buttonText}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // ✅ Contact display logic
-  const displayContact = grave.familyContact || 'Family Representative';
-
   const formatDate = (isoDate?: string) => {
     if (!isoDate) return '—';
-
     const date = new Date(isoDate);
-
     return date.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'long',
@@ -121,14 +128,15 @@ const GraveDetailsScreen: React.FC = () => {
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backButton}>
+          style={styles.backButton}
+        >
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Grave Details</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Main Info Card */}
+        {/* Main Info */}
         <View style={[commonStyles.card, styles.mainCard]}>
           <Text style={styles.monumentIcon}>🏛️</Text>
           <Text style={styles.deceasedName}>{grave.deceasedName}</Text>
@@ -137,42 +145,15 @@ const GraveDetailsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Details Card */}
+        {/* Info Card */}
         <View style={commonStyles.card}>
           <Text style={styles.sectionTitle}>Information</Text>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Lot Number:</Text>
-            <Text style={styles.detailValue}>{grave.lotNumber}</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Birth Date:</Text>
-            <Text style={styles.detailValue}>
-              {formatDate(grave.birthDate)}
-            </Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Death Date:</Text>
-            <Text style={styles.detailValue}>
-              {formatDate(grave.deathDate)}
-            </Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Burial Date:</Text>
-            <Text style={styles.detailValue}>
-              {formatDate(grave.burialDate)}
-            </Text>
-          </View>
-
-          {displayContact && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Contact:</Text>
-              <Text style={styles.detailValue}>{displayContact}</Text>
-            </View>
-          )}
+          <DetailRow label="Lot Number" value={grave.lotNumber} />
+          <DetailRow label="Birth Date" value={formatDate(grave.birthDate)} />
+          <DetailRow label="Death Date" value={formatDate(grave.deathDate)} />
+          <DetailRow label="Burial Date" value={formatDate(grave.burialDate)} />
+          <DetailRow label="Contact" value={grave.familyContact || '—'} />
         </View>
 
         {/* Location Card */}
@@ -189,8 +170,7 @@ const GraveDetailsScreen: React.FC = () => {
             }}
             scrollEnabled={false}
             zoomEnabled={false}
-            pitchEnabled={false}
-            rotateEnabled={false}>
+          >
             <Marker
               coordinate={{
                 latitude: grave.location.latitude,
@@ -202,20 +182,29 @@ const GraveDetailsScreen: React.FC = () => {
           </MapView>
 
           <Text style={styles.coordinatesText}>
-            {grave.location.latitude.toFixed(4)},{' '}
-            {grave.location.longitude.toFixed(4)}
+            {grave.location.latitude.toFixed(4)}, {grave.location.longitude.toFixed(4)}
           </Text>
 
           <TouchableOpacity
             style={[commonStyles.button, styles.navigateButton]}
-            onPress={handleNavigate}>
-            <Text style={commonStyles.buttonText}>📍 Navigate to Location</Text>
+            onPress={handleNavigate}
+          >
+            <Text style={commonStyles.buttonText}>
+              📍 Navigate to Location
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
   );
 };
+
+const DetailRow = ({ label, value }: any) => (
+  <View style={styles.detailRow}>
+    <Text style={styles.detailLabel}>{label}:</Text>
+    <Text style={styles.detailValue}>{value}</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
   header: {
@@ -229,7 +218,6 @@ const styles = StyleSheet.create({
   backButtonText: {
     ...typography.body1,
     color: colors.surface,
-    fontWeight: '500',
   },
   headerTitle: {
     ...typography.h3,
@@ -265,15 +253,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...typography.h4,
-    color: colors.text,
     marginBottom: spacing.md,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   detailLabel: {
     ...typography.body1,
@@ -281,82 +266,24 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     ...typography.body1,
-    color: colors.text,
     fontWeight: '500',
-  },
-  mapPlaceholder: {
-    backgroundColor: colors.background,
-    height: 200,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  mapIcon: {
-    fontSize: 48,
-    marginBottom: spacing.sm,
-  },
-  mapText: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  coordinatesText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontFamily: 'monospace',
-  },
-  navigateButton: {
-    backgroundColor: colors.info,
-  },
-  qrPlaceholder: {
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-    height: 150,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  qrIcon: {
-    ...typography.h2,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  qrText: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    fontFamily: 'monospace',
-  },
-  qrNote: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  heritageCard: {
-    backgroundColor: colors.secondary,
-  },
-  heritageTitle: {
-    ...typography.h4,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  heritageText: {
-    ...typography.body2,
-    color: colors.text,
-    lineHeight: 20,
-  },
-  errorText: {
-    ...typography.h4,
-    color: colors.error,
-    marginBottom: spacing.md,
   },
   previewMap: {
     height: 200,
     borderRadius: 8,
+    marginBottom: spacing.md,
+  },
+  coordinatesText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  navigateButton: {
+    backgroundColor: colors.info,
+  },
+  errorText: {
+    ...typography.h4,
+    color: colors.error,
     marginBottom: spacing.md,
   },
 });

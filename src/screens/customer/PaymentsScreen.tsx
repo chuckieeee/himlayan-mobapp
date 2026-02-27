@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,26 +6,35 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../../navigation/types';
-import { PaymentService } from '@services/PaymentService';
-import { AuthService } from '@services/AuthService';
-import { Payment } from '@data/mockData';
-import { colors, spacing, typography } from '@styles/theme';
-import { commonStyles } from '@styles/commonStyles';
+  Linking,
+  Alert,
+} from "react-native";
+
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+
+import { RootStackParamList } from "../../navigation/types";
+
+import { PaymentService } from "@services/PaymentService";
+
+import { Payment } from "@data/mockData";
+
+import { colors, spacing, typography } from "@styles/theme";
+import { commonStyles } from "@styles/commonStyles";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const PaymentsScreen: React.FC = () => {
+
   const navigation = useNavigation<NavigationProp>();
+
   const [payments, setPayments] = useState<Payment[]>([]);
   const [summary, setSummary] = useState({
     totalPaid: 0,
     totalPending: 0,
     totalOverdue: 0,
   });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,82 +42,168 @@ const PaymentsScreen: React.FC = () => {
   }, []);
 
   const loadPayments = async () => {
+
     setLoading(true);
-    const user = await AuthService.getCurrentUser();
 
-    if (user) {
-      const userPayments = await PaymentService.getUserPayments(user.id);
-      const paymentSummary = await PaymentService.getPaymentSummary(user.id);
+    try {
 
-      setPayments(userPayments);
+      const userPayments = await PaymentService.getUserPayments();
+      const paymentSummary = await PaymentService.getPaymentSummary();
+
+      setPayments(userPayments as any);
       setSummary(paymentSummary);
+
+    } catch (error) {
+
+      console.log("Load payments error:", error);
+
     }
 
     setLoading(false);
+
   };
 
-  const getStatusColor = (status: Payment['status']) => {
+  /**
+   * GLOBAL PAY NOW BUTTON
+   */
+const handlePayNow = async () => {
+
+  try {
+
+    const result = await PaymentService.createXenditPayment(
+      500,
+      "maintenance",
+      "gcash"
+    );
+
+    console.log("PAYMENT RESULT:", result);
+
+    if (result.success && result.invoice_url) {
+
+      Linking.openURL(result.invoice_url);
+
+      loadPayments();
+
+    } else {
+
+      Alert.alert("Payment Error", result.error || "Failed to create invoice");
+
+    }
+
+  } catch (error) {
+
+    console.log(error);
+    Alert.alert("Error", "Failed to create payment");
+
+  }
+
+};
+
+
+  /**
+   * PAY EXISTING PAYMENT
+   */
+  const handlePayExisting = async (payment: any) => {
+
+  try {
+
+    const result = await PaymentService.createXenditPayment(
+      payment.amount,
+      payment.payment_type,
+      payment.payment_method
+    );
+
+    if (result.success && result.invoice_url) {
+
+      Linking.openURL(result.invoice_url);
+
+    } else {
+
+      Alert.alert("Payment Error", result.error || "Failed to create invoice");
+
+    }
+
+  } catch (error) {
+
+    console.log(error);
+    Alert.alert("Error", "Failed to create payment");
+
+  }
+
+};
+
+
+  const getStatusColor = (status: string) => {
+
     switch (status) {
-      case 'paid':
+
+      case "verified":
         return colors.success;
-      case 'pending':
+
+      case "pending":
         return colors.warning;
-      case 'overdue':
+
+      case "rejected":
         return colors.error;
+
       default:
         return colors.textSecondary;
-    }
-  };
 
-  const getTypeIcon = (type: Payment['type']) => {
-    switch (type) {
-      case 'burial':
-        return '⚰️';
-      case 'reservation':
-        return '📝';
-      case 'maintenance':
-        return '🔧';
-      default:
-        return '💳';
     }
+
   };
 
   if (loading) {
+
     return (
       <View style={commonStyles.centeredContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
+
   }
 
   return (
+
     <View style={commonStyles.container}>
-      {/* Header */}
+
+      {/* HEADER */}
       <View style={styles.header}>
+
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          style={styles.backButton}
+        >
+          <Text style={styles.backButtonText}>
+            ← Back
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Balances & Payments</Text>
+
+        <Text style={styles.headerTitle}>
+          Balances & Payments
+        </Text>
+
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Summary Cards */}
+
+        {/* SUMMARY */}
         <View style={styles.summaryContainer}>
-          <View
-            style={[styles.summaryCard, { backgroundColor: colors.success }]}>
+
+          <View style={[styles.summaryCard, { backgroundColor: colors.success }]}>
             <Text style={styles.summaryLabel}>Total Paid</Text>
             <Text style={styles.summaryAmount}>
               ₱{summary.totalPaid.toLocaleString()}
             </Text>
           </View>
 
-          <View
-            style={[styles.summaryCard, { backgroundColor: colors.warning }]}>
+          <View style={[styles.summaryCard, { backgroundColor: colors.warning }]}>
             <Text style={styles.summaryLabel}>Pending</Text>
             <Text style={styles.summaryAmount}>
-              ₱{summary.totalPending.toLocaleString()}
+            ₱{summary.totalPending.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
             </Text>
           </View>
 
@@ -118,278 +213,233 @@ const PaymentsScreen: React.FC = () => {
               ₱{summary.totalOverdue.toLocaleString()}
             </Text>
           </View>
+
         </View>
 
-        {/* Payment List */}
+        {/* GLOBAL PAY NOW */}
+        <TouchableOpacity
+          style={styles.payNowButton}
+          onPress={handlePayNow}
+        >
+          <Text style={styles.payNowButtonText}>
+            Pay Maintenance Fee (₱500)
+          </Text>
+        </TouchableOpacity>
+
+        {/* PAYMENT LIST */}
         <View style={commonStyles.card}>
-          <Text style={styles.sectionTitle}>Payment History</Text>
+
+          <Text style={styles.sectionTitle}>
+            Payment History
+          </Text>
 
           {payments.length === 0 ? (
+
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyIcon}>💳</Text>
-              <Text style={styles.emptyText}>No payment records</Text>
+              <Text style={styles.emptyText}>
+                No payment records yet
+              </Text>
             </View>
+
           ) : (
-            payments.map(payment => (
+
+            payments.map((payment: any) => (
+
               <View key={payment.id} style={styles.paymentCard}>
+
                 <View style={styles.paymentHeader}>
-                  <View style={styles.paymentTypeContainer}>
-                    <Text style={styles.paymentIcon}>
-                      {getTypeIcon(payment.type)}
+
+                  <View>
+                    <Text style={styles.paymentDescription}>
+                      {payment.payment_type}
                     </Text>
-                    <View>
-                      <Text style={styles.paymentDescription}>
-                        {payment.description}
-                      </Text>
-                      <Text style={styles.paymentId}>{payment.id}</Text>
-                    </View>
+
+                    <Text style={styles.paymentId}>
+                      Ref: {payment.reference_number || payment.id}
+                    </Text>
                   </View>
+
                   <View
                     style={[
                       styles.statusBadge,
                       { backgroundColor: getStatusColor(payment.status) },
-                    ]}>
+                    ]}
+                  >
                     <Text style={styles.statusText}>
                       {payment.status.toUpperCase()}
                     </Text>
                   </View>
+
                 </View>
 
                 <View style={styles.paymentDetails}>
+
                   <View style={styles.paymentRow}>
                     <Text style={styles.paymentLabel}>Amount:</Text>
                     <Text style={styles.paymentAmount}>
-                      ₱{payment.amount.toLocaleString()}
+                      ₱{payment.amount}
                     </Text>
                   </View>
 
-                  <View style={styles.paymentRow}>
-                    <Text style={styles.paymentLabel}>Due Date:</Text>
-                    <Text style={styles.paymentValue}>{payment.dueDate}</Text>
-                  </View>
+                  {payment.status === "pending" && (
 
-                  <View style={styles.paymentRow}>
-                    <Text style={styles.paymentLabel}>Type:</Text>
-                    <Text style={styles.paymentValue}>
-                      {payment.type.charAt(0).toUpperCase() +
-                        payment.type.slice(1)}
-                    </Text>
-                  </View>
+                    <TouchableOpacity
+                      style={styles.payButton}
+                      onPress={() => handlePayExisting(payment)}
+                    >
+                      <Text style={styles.payButtonText}>
+                        Pay Now
+                      </Text>
+                    </TouchableOpacity>
+
+                  )}
+
                 </View>
+
               </View>
+
             ))
+
           )}
+
         </View>
 
-        {/* Payment Methods */}
-        <View style={commonStyles.card}>
-          <Text style={styles.sectionTitle}>Payment Methods</Text>
-
-          <View style={styles.methodCard}>
-            <Text style={styles.methodIcon}>🏦</Text>
-            <View style={styles.methodContent}>
-              <Text style={styles.methodTitle}>Bank Transfer</Text>
-              <Text style={styles.methodDescription}>
-                Direct bank deposit or transfer
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.methodCard}>
-            <Text style={styles.methodIcon}>💳</Text>
-            <View style={styles.methodContent}>
-              <Text style={styles.methodTitle}>Credit/Debit Card</Text>
-              <Text style={styles.methodDescription}>
-                Visa, Mastercard accepted
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.methodCard}>
-            <Text style={styles.methodIcon}>📱</Text>
-            <View style={styles.methodContent}>
-              <Text style={styles.methodTitle}>E-Wallet</Text>
-              <Text style={styles.methodDescription}>
-                GCash, PayMaya, and more
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Info Note */}
-        <View style={[commonStyles.card, styles.infoCard]}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
-          <Text style={styles.infoText}>
-            Payment processing is handled securely. For assistance, contact the
-            administrative office during business hours.
-          </Text>
-        </View>
       </ScrollView>
+
     </View>
+
   );
+
 };
 
 const styles = StyleSheet.create({
+
   header: {
     backgroundColor: colors.primary,
     padding: spacing.md,
     paddingTop: spacing.lg,
   },
+
   backButton: {
     marginBottom: spacing.sm,
   },
+
   backButtonText: {
     ...typography.body1,
     color: colors.surface,
-    fontWeight: '500',
   },
+
   headerTitle: {
     ...typography.h3,
     color: colors.surface,
   },
+
   scrollContent: {
     padding: spacing.md,
   },
+
   summaryContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: spacing.md,
   },
+
   summaryCard: {
     flex: 1,
     borderRadius: 12,
     padding: spacing.md,
     marginHorizontal: spacing.xs,
-    elevation: 2,
   },
+
   summaryLabel: {
-    ...typography.caption,
     color: colors.surface,
-    marginBottom: spacing.xs,
   },
+
   summaryAmount: {
-    ...typography.h4,
     color: colors.surface,
-    fontWeight: '700',
+    fontWeight: "bold",
   },
-  sectionTitle: {
-    ...typography.h4,
-    color: colors.text,
+
+  payNowButton: {
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: 10,
+    alignItems: "center",
     marginBottom: spacing.md,
   },
+
+  payNowButtonText: {
+    color: colors.surface,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  sectionTitle: {
+    ...typography.h4,
+    marginBottom: spacing.md,
+  },
+
   paymentCard: {
     backgroundColor: colors.background,
-    borderRadius: 8,
     padding: spacing.md,
     marginBottom: spacing.md,
   },
+
   paymentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
-  paymentTypeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  paymentIcon: {
-    fontSize: 32,
-    marginRight: spacing.sm,
-  },
+
   paymentDescription: {
-    ...typography.body1,
-    color: colors.text,
-    fontWeight: '500',
+    fontWeight: "bold",
   },
+
   paymentId: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    fontFamily: 'monospace',
+    fontSize: 12,
   },
+
   statusBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 12,
+    padding: 5,
   },
+
   statusText: {
-    ...typography.caption,
-    color: colors.surface,
-    fontWeight: '600',
+    color: "white",
   },
+
   paymentDetails: {
     marginTop: spacing.sm,
   },
+
   paymentRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
-  paymentLabel: {
-    ...typography.body2,
-    color: colors.textSecondary,
-  },
+
   paymentAmount: {
-    ...typography.body1,
-    color: colors.text,
-    fontWeight: '600',
+    fontWeight: "bold",
   },
-  paymentValue: {
-    ...typography.body2,
-    color: colors.text,
+
+  payButton: {
+    backgroundColor: colors.primary,
+    padding: spacing.sm,
+    marginTop: spacing.sm,
+    alignItems: "center",
   },
+
+  payButtonText: {
+    color: "white",
+  },
+
   emptyContainer: {
-    alignItems: 'center',
-    padding: spacing.xl,
+    alignItems: "center",
   },
+
   emptyIcon: {
     fontSize: 48,
-    marginBottom: spacing.sm,
   },
-  emptyText: {
-    ...typography.body1,
-    color: colors.textSecondary,
-  },
-  methodCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    marginBottom: spacing.sm,
-  },
-  methodIcon: {
-    fontSize: 32,
-    marginRight: spacing.md,
-  },
-  methodContent: {
-    flex: 1,
-  },
-  methodTitle: {
-    ...typography.body1,
-    color: colors.text,
-    fontWeight: '500',
-    marginBottom: spacing.xs,
-  },
-  methodDescription: {
-    ...typography.body2,
-    color: colors.textSecondary,
-  },
-  infoCard: {
-    backgroundColor: colors.info,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  infoIcon: {
-    fontSize: 24,
-    marginRight: spacing.sm,
-  },
-  infoText: {
-    ...typography.body2,
-    color: colors.surface,
-    flex: 1,
-    lineHeight: 20,
-  },
+
+  emptyText: {},
+
 });
 
 export default PaymentsScreen;
