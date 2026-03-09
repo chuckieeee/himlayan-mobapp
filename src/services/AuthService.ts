@@ -2,7 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '@/config/api';
 import type { User } from '@/types/database';
 import { API_BASE_URL } from '@/config/api';
+import { getExpoPushToken } from '@services/PushNotificationService';
+
 console.log("CURRENT API BASE URL:", API_BASE_URL);
+
 export class AuthService {
   static async login(email: string, password: string): Promise<User> {
     console.log('Attempting API login for:', email);
@@ -30,7 +33,7 @@ export class AuthService {
       throw new Error("Server returned non-JSON response");
     }
 
-console.log("LOGIN RESPONSE:", data);
+    console.log("LOGIN RESPONSE:", data);
 
     // ✅ FIX — read correct Laravel structure
     const user = data.data?.user;
@@ -50,6 +53,30 @@ console.log("LOGIN RESPONSE:", data);
 
     await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
     await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+
+    // -------------------------------------------------
+    // REGISTER PUSH NOTIFICATION TOKEN
+    // -------------------------------------------------
+    try {
+      const pushToken = await getExpoPushToken();
+
+      if (pushToken) {
+        await fetch(`${API_BASE_URL}/save-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            expo_push_token: pushToken,
+          }),
+        });
+
+        console.log('Push token saved to server');
+      }
+    } catch (error) {
+      console.log('Failed to register push token:', error);
+    }
 
     return user;
   }
