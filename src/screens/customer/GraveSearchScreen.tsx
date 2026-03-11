@@ -70,15 +70,15 @@ const GraveSearchScreen: React.FC = () => {
   };
 
   const handleResultPress = async (result: SearchResult) => {
-    console.log('👉 RESULT TAPPED:', result);
+    console.log('RESULT TAPPED:', result);
 
     try {
       const response = await api.get(`/burial-records/${result.id}`);
 
-      console.log('📦 API response:', response);
+      console.log('API response:', response);
 
       if (!response.success) {
-        console.log('❌ Burial fetch failed:', response.message);
+        console.log('Burial fetch failed:', response.message);
         return;
       }
 
@@ -110,7 +110,6 @@ const GraveSearchScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Search Input */}
         <View style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
             placeholder="Enter name (e.g. Juan Dela Cruz)..."
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.primary,
     padding: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: 50,
   },
   backButton: {
     marginBottom: spacing.sm,

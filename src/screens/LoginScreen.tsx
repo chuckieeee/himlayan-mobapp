@@ -20,7 +20,7 @@ import { commonStyles } from '@styles/commonStyles';
 
 type LoginScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
-  'Register'
+  'MainTabs'
 >;
 
 const LoginScreen: React.FC = () => {
@@ -92,7 +92,10 @@ const LoginScreen: React.FC = () => {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            textContentType="password"
             autoComplete="password"
+            autoCapitalize='none'
+            autoCorrect={false}
           />
         </View>
 
@@ -104,14 +107,6 @@ const LoginScreen: React.FC = () => {
             {loading ? 'Logging in...' : 'Login'}
           </Text>
         </TouchableOpacity>
-
-        {/* Register Link */}
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.registerLink}>Sign up</Text>
-          </TouchableOpacity>
-        </View>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Version 1.0.0</Text>
@@ -173,22 +168,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.6,
-  },
-  registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  registerText: {
-    ...typography.body2,
-    color: colors.textSecondary,
-  },
-  registerLink: {
-    ...typography.body2,
-    color: colors.primary,
-    fontWeight: '600',
   },
   infoContainer: {
     marginTop: spacing.lg,

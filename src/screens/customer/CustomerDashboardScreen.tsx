@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.primary,
     padding: spacing.lg,
-    paddingTop: spacing.xl,
+    paddingTop: 50,
   },
   greeting: {
     ...typography.body1,

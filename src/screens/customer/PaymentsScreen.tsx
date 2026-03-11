@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.primary,
     padding: spacing.md,
-    paddingTop: spacing.lg,
+    paddingTop: 50,
   },
 
   backButton: {

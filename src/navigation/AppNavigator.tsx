@@ -6,7 +6,6 @@ import type { User } from '@/types/database';
 
 // Import screens
 import LoginScreen from '@screens/LoginScreen';
-import RegisterScreen from '@screens/RegisterScreen';
 import GraveDetailsScreen from '@screens/customer/GraveDetailsScreen';
 import GoogleMaps from '@screens/customer/GoogleMaps';
 import GraveMapScreen from '@screens/customer/GraveMapScreen';
@@ -26,7 +25,7 @@ const AppNavigator: React.FC = () => {
     checkAuthStatus();
 
     // Check auth status every 500ms to detect login/logout
-    const interval = setInterval(checkAuthStatus, 500);
+    const interval = setInterval(checkAuthStatus, 2000);
 
     return () => clearInterval(interval);
   }, []);
@@ -65,7 +64,6 @@ const AppNavigator: React.FC = () => {
           // Auth screens when not authenticated
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
           </>
         ) : (
           // Customer/Visitor screens only (admin/staff blocked at AuthService level)

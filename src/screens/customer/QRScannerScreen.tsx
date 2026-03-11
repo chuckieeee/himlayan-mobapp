@@ -18,7 +18,7 @@ const QRScannerScreen: React.FC = () => {
 
   const [permission, requestPermission] = useCameraPermissions();
 
-  // 🚀 Start scanning
+  //  Start scanning
   const handleScanPress = async () => {
     if (!permission?.granted) {
       const res = await requestPermission();
@@ -32,7 +32,7 @@ const QRScannerScreen: React.FC = () => {
     setScanning(true);
   };
 
-  // 📷 QR handler
+  //  QR handler
   const handleScan = async ({ data }: any) => {
     if (scanned) return;
 
@@ -50,7 +50,7 @@ const QRScannerScreen: React.FC = () => {
 
       console.log('Extracted code:', code);
 
-      // ✅ Correct API route
+      //  Correct API route
       const response = await api.get(`/qr-codes/${code}`);
 
       if (!response.success) {
@@ -114,7 +114,7 @@ const QRScannerScreen: React.FC = () => {
             style={commonStyles.button}
             onPress={handleScanPress}
           >
-            <Text style={commonStyles.buttonText}>📷 Start Scan</Text>
+            <Text style={commonStyles.buttonText}> Start Scan</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.primary,
     padding: spacing.md,
-    paddingTop: spacing.lg,
+    paddingTop: 50,
   },
 
   backButtonText: {

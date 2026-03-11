@@ -27,7 +27,7 @@ export class PaymentService {
     });
 
     const text = await response.text();
-    console.log("PAYMENTS RAW:", text);
+    //console.log("PAYMENTS RAW:", text);
 
     const data = JSON.parse(text);
 
@@ -60,7 +60,7 @@ export class PaymentService {
     });
 
     const text = await response.text();
-    console.log("XENDIT RAW RESPONSE:", text);
+    //console.log("XENDIT RAW RESPONSE:", text);
 
     return JSON.parse(text);
   }
