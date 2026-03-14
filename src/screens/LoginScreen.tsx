@@ -14,7 +14,6 @@ import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/navigation/types';
 import { AuthService } from '@services/AuthService';
-import { getErrorMessage } from '@/config/api';
 import { colors, spacing, typography } from '@styles/theme';
 import { commonStyles } from '@styles/commonStyles';
 
@@ -55,7 +54,7 @@ const LoginScreen: React.FC = () => {
           [{ text: 'OK', style: 'default' }]
         );
       } else {
-        Alert.alert('Login Failed', getErrorMessage(error));
+        Alert.alert('Login Failed', error?.message || 'Something went wrong');
       }
     } finally {
       setLoading(false);
@@ -65,14 +64,14 @@ const LoginScreen: React.FC = () => {
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.logoContainer}>
-          <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoText}>🏛️</Text>
-          </View>
-          <Text style={styles.title}>Himlayang Pilipino</Text>
-          <Text style={styles.subtitle}>Memorial Park Navigation</Text>
-        </View>
-
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../../assets/icon.png')}
+          style={styles.logo}
+        />
+        <Text style={styles.title}>Himlayang Pilipino</Text>
+        <Text style={styles.subtitle}>Memorial Park Navigation</Text>
+      </View>
         <View style={styles.formContainer}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -131,17 +130,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xl,
   },
-  logoPlaceholder: {
-    width: 120,
-    height: 120,
-    backgroundColor: colors.primary,
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  logoText: {
-    fontSize: 60,
+  logo: {
+  width: 120,
+  height: 120,
+  resizeMode: 'contain',
+  marginBottom: spacing.md,
   },
   title: {
     ...typography.h2,

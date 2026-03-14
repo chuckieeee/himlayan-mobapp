@@ -59,6 +59,7 @@ export const commonStyles = StyleSheet.create({
     borderRadius: 8,
     padding: spacing.md,
     marginBottom: spacing.md,
+    color: colors.text,
     ...typography.body1,
   },
   label: {

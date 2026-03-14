@@ -17,6 +17,12 @@
       "package": "com.himlayangpilipinomemorialpark",
       "versionCode": 1,
       "usesCleartextTraffic": true,
+
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff"
+      },
+
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
@@ -26,6 +32,7 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
+
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAFLUi1PfE9oqHFHV6f2NazYgW8HpRRa9k"
