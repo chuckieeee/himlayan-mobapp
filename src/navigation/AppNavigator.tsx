@@ -9,6 +9,7 @@ import LoginScreen from '@screens/LoginScreen';
 import GraveDetailsScreen from '@screens/customer/GraveDetailsScreen';
 import GoogleMaps from '@screens/customer/GoogleMaps';
 import GraveMapScreen from '@screens/customer/GraveMapScreen';
+import ProfileScreen from '@screens/customer/ProfileScreen';
 
 // Import bottom tab navigator
 import BottomTabNavigator from './BottomTabNavigator';
@@ -39,7 +40,7 @@ const AppNavigator: React.FC = () => {
       (currentUser.role === 'admin' || currentUser.role === 'staff')
     ) {
       console.log(
-        '🚫 Security: Admin/Staff detected in navigation, logging out'
+        'Security: Admin/Staff detected in navigation, logging out'
       );
       await AuthService.clearAuthData();
       setUser(null);
@@ -72,6 +73,7 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen name="GraveDetails" component={GraveDetailsScreen} />
             <Stack.Screen name="Map" component={GoogleMaps} />
             <Stack.Screen name="GraveMap" component={GraveMapScreen} />
+            <Stack.Screen name="UserProfile" component={ProfileScreen} />
           </>
         )}
       </Stack.Navigator>

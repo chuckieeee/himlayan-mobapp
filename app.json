@@ -5,21 +5,26 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+
+    "icon": "./assets/icon.png",
+
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#2E7D32"
     },
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.himlayangpilipinomemorialpark"
     },
+
     "android": {
       "package": "com.himlayangpilipinomemorialpark",
       "versionCode": 1,
       "usesCleartextTraffic": true,
 
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
 
@@ -39,6 +44,7 @@
         }
       }
     },
+
     "plugins": [
       "expo-notifications",
       [
@@ -52,8 +58,10 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Himlayang Pilipino to use your location for navigation assistance."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
+
     "extra": {
       "eas": {
         "projectId": "3e2cf18b-34ad-461e-8a69-f303b4637a0f"

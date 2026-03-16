@@ -1,8 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, Text, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, TouchableOpacity } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
+
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '@/navigation/types';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyAFLUi1PfE9oqHFHV6f2NazYgW8HpRRa9k';
 
@@ -42,6 +46,9 @@ interface Step {
 }
 
 const GraveMapScreen: React.FC<Props> = ({ route }) => {
+
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
   const { plot } = route.params;
 
   const latitude = Number(plot.latitude);
@@ -59,9 +66,15 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
 
   const [region, setRegion] = useState<Region | null>(null);
 
-  const stripHtml = (html: string) => {
-    return html.replace(/<[^>]+>/g, '');
-  };
+  const cleanInstruction = (html: string) => {
+  let text = html.replace(/<[^>]+>/g, '');
+
+  // remove unwanted phrases
+  text = text.replace(/Restricted usage road/gi, '');
+  text = text.replace(/\s+/g, ' ').trim();
+
+  return text;
+};
 
   const calculateDistance = (
     lat1: number,
@@ -77,7 +90,9 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
 
     const a =
       Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) ** 2;
 
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
   };
@@ -106,6 +121,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           distanceInterval: 1,
         },
         loc => {
+
           const coords = loc.coords;
           setUserLocation(coords);
 
@@ -135,6 +151,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
   }, [steps]);
 
   const updateCurrentStep = (coords: Location.LocationObjectCoords) => {
+
     if (!steps.length) return;
 
     const step = steps[currentStepIndex];
@@ -163,15 +180,33 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
   }
 
   return (
+
     <View style={styles.container}>
-      {/* TURN BY TURN NAV BOX */}
+
+      {/* HEADER */}
+      <View style={styles.header}>
+
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Text style={styles.backButtonText}>← Back</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.headerTitle}>Navigate to Grave</Text>
+
+      </View>
+
+      {/* NAV BOX */}
       {currentStep && (
         <View style={styles.navBox}>
           <Text style={styles.navText}>
-            {stripHtml(currentStep.html_instructions)}
+            {cleanInstruction(currentStep.html_instructions)}
           </Text>
 
-          <Text style={styles.navDistance}>in {currentStep.distance.text}</Text>
+          <Text style={styles.navDistance}>
+            in {currentStep.distance.text}
+          </Text>
         </View>
       )}
 
@@ -197,7 +232,9 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           }
         }
         showsUserLocation
-        followsUserLocation>
+        followsUserLocation
+      >
+
         <Marker
           coordinate={{
             latitude,
@@ -222,14 +259,18 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
             strokeColor="#4285F4"
             mode="WALKING"
             onReady={result => {
+
               const routeSteps = result.legs[0].steps as unknown as Step[];
 
               setSteps(routeSteps);
+
             }}
             onError={err => console.log('Directions error:', err)}
           />
         )}
+
       </MapView>
+
     </View>
   );
 };
@@ -237,6 +278,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
 export default GraveMapScreen;
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
   },
@@ -252,9 +294,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  header: {
+    backgroundColor: '#1E4D2B',
+    padding: 15,
+    paddingTop: 50,
+  },
+
+  backButton: {
+    marginBottom: 5,
+  },
+
+  backButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+
+  headerTitle: {
+    color: 'white',
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+
   navBox: {
     position: 'absolute',
-    top: 60,
+    top: 130,
     left: 10,
     right: 10,
     backgroundColor: '#4285F4',
@@ -292,4 +355,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
 });

@@ -188,6 +188,13 @@ const CustomerDashboardScreen: React.FC = () => {
       icon: '🗺️',
       onPress: () => navigation.navigate('Map'), // new map screen
     },
+    {
+    id: 6,
+    title: 'My Profile',
+    description: 'View your personal information',
+    icon: '👤',
+    onPress: () => navigation.navigate('UserProfile'),
+    },
   ];
 
   return (
@@ -271,22 +278,6 @@ const CustomerDashboardScreen: React.FC = () => {
               <Text style={styles.announcementDate}>{announcement.date}</Text>
             </View>
           ))}
-        </View>
-
-        {/* Quick Stats */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{myPlots.length}</Text>
-            <Text style={styles.statLabel}>My Plots</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{announcements.length}</Text>
-            <Text style={styles.statLabel}>Announcements</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>24/7</Text>
-            <Text style={styles.statLabel}>Support</Text>
-          </View>
         </View>
 
         {/* Logout Button */}
@@ -441,31 +432,6 @@ const styles = StyleSheet.create({
   announcementDate: {
     ...typography.caption,
     color: colors.textTertiary,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginHorizontal: spacing.xs,
-    alignItems: 'center',
-    elevation: 2,
-  },
-  statValue: {
-    ...typography.h3,
-    color: colors.primary,
-    marginBottom: spacing.xs,
-    fontWeight: 'bold',
-  },
-  statLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    textAlign: 'center',
   },
   logoutButton: {
     backgroundColor: colors.error,

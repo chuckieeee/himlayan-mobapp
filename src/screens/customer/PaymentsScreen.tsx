@@ -10,13 +10,12 @@ import {
   Alert,
 } from "react-native";
 
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import { RootStackParamList } from "../../navigation/types";
 
 import { PaymentService } from "@services/PaymentService";
-
 import { Payment } from "@data/mockData";
 
 import { colors, spacing, typography } from "@styles/theme";
@@ -40,6 +39,13 @@ const PaymentsScreen: React.FC = () => {
   useEffect(() => {
     loadPayments();
   }, []);
+
+  // Refresh payments when returning from browser
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPayments();
+    }, [])
+  );
 
   const loadPayments = async () => {
 
@@ -66,72 +72,68 @@ const PaymentsScreen: React.FC = () => {
   /**
    * GLOBAL PAY NOW BUTTON
    */
-const handlePayNow = async () => {
+  const handlePayNow = async () => {
 
-  try {
+    try {
 
-    const result = await PaymentService.createXenditPayment(
-      500,
-      "maintenance",
-      "gcash"
-    );
+      const result = await PaymentService.createXenditPayment(
+        500,
+        "maintenance",
+        "gcash"
+      );
 
-    console.log("PAYMENT RESULT:", result);
+      console.log("PAYMENT RESULT:", result);
 
-    if (result.success && result.invoice_url) {
+      if (result.success && result.invoice_url) {
 
-      Linking.openURL(result.invoice_url);
+        await Linking.openURL(result.invoice_url);
 
-      loadPayments();
+      } else {
 
-    } else {
+        Alert.alert("Payment Error", result.error || "Failed to create invoice");
 
-      Alert.alert("Payment Error", result.error || "Failed to create invoice");
+      }
+
+    } catch (error) {
+
+      console.log(error);
+      Alert.alert("Error", "Failed to create payment");
 
     }
 
-  } catch (error) {
-
-    console.log(error);
-    Alert.alert("Error", "Failed to create payment");
-
-  }
-
-};
-
+  };
 
   /**
    * PAY EXISTING PAYMENT
    */
   const handlePayExisting = async (payment: any) => {
 
-  try {
+    try {
 
-    const result = await PaymentService.createXenditPayment(
-      payment.amount,
-      payment.payment_type,
-      payment.payment_method
-    );
+      const result = await PaymentService.createXenditPayment(
+        payment.amount,
+        payment.payment_type,
+        payment.payment_method
+      );
 
-    if (result.success && result.invoice_url) {
+      if (result.success && result.invoice_url) {
 
-      Linking.openURL(result.invoice_url);
+        await Linking.openURL(result.invoice_url);
 
-    } else {
+      } else {
 
-      Alert.alert("Payment Error", result.error || "Failed to create invoice");
+        Alert.alert("Payment Error", result.error || "Failed to create invoice");
+
+      }
+
+    } catch (error) {
+
+      console.log(error);
+      Alert.alert("Error", "Failed to create payment");
 
     }
 
-  } catch (error) {
-
-    console.log(error);
-    Alert.alert("Error", "Failed to create payment");
-
-  }
-
-};
-
+  };
 
   const getStatusColor = (status: string) => {
 
@@ -200,10 +202,10 @@ const handlePayNow = async () => {
           <View style={[styles.summaryCard, { backgroundColor: colors.warning }]}>
             <Text style={styles.summaryLabel}>Pending</Text>
             <Text style={styles.summaryAmount}>
-            ₱{summary.totalPending.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+              ₱{summary.totalPending.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </Text>
           </View>
 

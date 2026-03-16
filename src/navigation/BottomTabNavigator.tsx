@@ -9,8 +9,6 @@ import GraveSearchScreen from '@screens/customer/GraveSearchScreen';
 import QRScannerScreen from '@screens/customer/QRScannerScreen';
 import PaymentsScreen from '@screens/customer/PaymentsScreen';
 import NotificationsScreen from '@screens/customer/NotificationsScreen';
-import GoogleMaps from '@screens/customer/GoogleMaps';
-
 import { BottomTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -66,32 +64,22 @@ const BottomTabNavigator: React.FC = () => {
         }}
       />
       <Tab.Screen
-        name="Payments"
-        component={PaymentsScreen}
-        options={{
-          tabBarLabel: 'Payments',
-          tabBarIcon: ({ focused, color }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '💳' : '💰'}</Text>
-          ),
-        }}
-      />
-      <Tab.Screen
         name="Profile"
         component={NotificationsScreen}
         options={{
-          tabBarLabel: 'Alerts',
+          tabBarLabel: 'Announcements',
           tabBarIcon: ({ focused, color }) => (
             <Text style={{ fontSize: 24 }}>{focused ? '🔔' : '🔕'}</Text>
           ),
         }}
       />
       <Tab.Screen
-        name="Map"
-        component={GoogleMaps}
+        name="Payments"
+        component={PaymentsScreen}
         options={{
-          tabBarLabel: 'Map',
-          tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '🗺️' : '🗺'}</Text>
+          tabBarLabel: 'Payments',
+          tabBarIcon: ({ focused, color }) => (
+            <Text style={{ fontSize: 24 }}>{focused ? '💳' : '💰'}</Text>
           ),
         }}
       />

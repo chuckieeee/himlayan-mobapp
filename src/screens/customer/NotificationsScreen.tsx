@@ -5,6 +5,7 @@ Text,
 StyleSheet,
 ScrollView,
 ActivityIndicator,
+TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -68,10 +69,22 @@ return ( <View style={commonStyles.container}>
 
 
   {/* Header */}
-  <View style={styles.header}>
-    <Text style={styles.headerTitle}>Announcements</Text>
-  </View>
+<View style={styles.header}>
 
+  <TouchableOpacity
+    onPress={() => navigation.navigate("Dashboard")}
+    style={styles.backButton}
+  >
+    <Text style={styles.backButtonText}>
+      ← Back
+    </Text>
+  </TouchableOpacity>
+
+  <Text style={styles.headerTitle}>
+    Announcements
+  </Text>
+
+</View>
   <ScrollView contentContainerStyle={styles.scrollContent}>
 
     {announcements.length === 0 ? (
@@ -136,6 +149,14 @@ header: {
 backgroundColor: colors.primary,
 padding: spacing.md,
 paddingTop: 50,
+},
+backButton: {
+  marginBottom: spacing.sm,
+},
+
+backButtonText: {
+  ...typography.body1,
+  color: colors.surface,
 },
 headerTitle: {
 ...typography.h3,
