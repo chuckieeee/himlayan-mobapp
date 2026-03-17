@@ -5,25 +5,30 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { RootStackParamList } from "../../navigation/types";
-import { AuthService } from "@services/AuthService";
+import { STORAGE_KEYS, API_BASE_URL } from "../../config/api";
 import { colors, spacing, typography } from "@styles/theme";
 import { commonStyles } from "@styles/commonStyles";
 
-type NavigationProp = StackNavigationProp<RootStackParamList>;
+type NavigationProp = any;
 
 interface ProfileData {
   fullName?: string;
   email?: string;
   phone?: string;
+  avatar?: string;
+  plots?: number;
 }
 
 const ProfileScreen: React.FC = () => {
-    const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp>();
 
   const [user, setUser] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,41 +38,30 @@ const ProfileScreen: React.FC = () => {
   }, []);
 
   const loadUser = async () => {
-
     try {
+      const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
-      const currentUser = await AuthService.getCurrentUser();
+      const response = await fetch(`${API_BASE_URL}/user`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
 
-      if (!currentUser) {
-        setLoading(false);
-        return;
-      }
-
-      console.log("Logged in user:", currentUser);
-
-      const response = await fetch(
-        `https://himlayangpilipino.com/api/profile?email=${currentUser.email}`
-      );
-
-      const profile = await response.json();
-
-      console.log("Profile API response:", profile);
-
-      const fullName =
-        `${profile.contact_first_name ?? ""} ` +
-        `${profile.contact_middle_initial ? profile.contact_middle_initial + " " : ""}` +
-        `${profile.contact_last_name ?? ""}`;
+      const resData = await response.json();
+      const userData = resData.data;
 
       setUser({
-        fullName: fullName.trim(),
-        email: currentUser.email,
-        phone: profile.contact_phone,
+        fullName: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        avatar: userData.avatar,
+        plots: userData.plots || 0, // optional
       });
 
     } catch (error) {
-
       console.log("Profile load error:", error);
-
     }
 
     setLoading(false);
@@ -82,34 +76,44 @@ const ProfileScreen: React.FC = () => {
   }
 
   return (
-
     <View style={commonStyles.container}>
 
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backButton}
-        >
-        <Text style={styles.backButtonText}>
-        ← Back
-        </Text>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>
-          My Profile
-        </Text>
-
+        <Text style={styles.headerTitle}>My Profile</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
-        <View style={commonStyles.card}>
+        {/* PROFILE IMAGE */}
+        <View style={styles.avatarContainer}>
+          {user?.avatar ? (
+            <Image source={{ uri: user.avatar }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Text style={styles.avatarText}>
+                {user?.fullName?.charAt(0)}
+              </Text>
+            </View>
+          )}
+        </View>
 
+        {/* USER INFO */}
+        <View style={commonStyles.card}>
           <ProfileItem label="Full Name" value={user?.fullName} />
           <ProfileItem label="Email" value={user?.email} />
           <ProfileItem label="Contact Number" value={user?.phone} />
+        </View>
 
+        {/* PLOTS BOX */}
+        <View style={styles.plotCard}>
+          <Text style={styles.plotTitle}>Owned Plots</Text>
+          <Text style={styles.plotValue}>
+            {user?.plots ?? 0}
+          </Text>
         </View>
 
         <Text style={styles.note}>
@@ -117,59 +121,83 @@ const ProfileScreen: React.FC = () => {
         </Text>
 
       </ScrollView>
-
     </View>
-
   );
-
 };
 
-const ProfileItem = ({ label, value }: { label: string; value?: string }) => {
-
-  return (
-
-    <View style={styles.row}>
-
-      <Text style={styles.label}>
-        {label}
-      </Text>
-
-      <Text style={styles.value}>
-        {value ? value : "Not available"}
-      </Text>
-
-    </View>
-
-  );
-
-};
+const ProfileItem = ({ label, value }: { label: string; value?: string }) => (
+  <View style={styles.row}>
+    <Text style={styles.label}>{label}</Text>
+    <Text style={styles.value}>{value || "Not available"}</Text>
+  </View>
+);
 
 const styles = StyleSheet.create({
-
   header: {
     backgroundColor: colors.primary,
     padding: spacing.md,
     paddingTop: 50,
   },
-
   headerTitle: {
     ...typography.h3,
     color: colors.surface,
   },
-
+  backButton: {
+    color: colors.surface,
+    marginBottom: spacing.sm,
+  },
   scrollContent: {
     padding: spacing.md,
+  },
+
+  avatarContainer: {
+    alignItems: "center",
+    marginBottom: spacing.lg,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  avatarPlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  avatarText: {
+    color: "#fff",
+    fontSize: 40,
+    fontWeight: "bold",
+  },
+
+  plotCard: {
+    marginTop: spacing.lg,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    alignItems: "center",
+    elevation: 3,
+  },
+  plotTitle: {
+    ...typography.body2,
+    color: colors.textSecondary,
+  },
+  plotValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.primary,
   },
 
   row: {
     marginBottom: spacing.md,
   },
-
   label: {
     ...typography.caption,
     color: colors.textSecondary,
   },
-
   value: {
     ...typography.body1,
     fontWeight: "600",
@@ -181,14 +209,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: colors.textSecondary,
   },
-  backButton: {
-  marginBottom: spacing.sm,
-},
-    backButtonText: {
-    ...typography.body1,
-    color: colors.surface,
-    },
-
 });
 
 export default ProfileScreen;

@@ -40,7 +40,6 @@ const PaymentsScreen: React.FC = () => {
     loadPayments();
   }, []);
 
-  // Refresh payments when returning from browser
   useFocusEffect(
     React.useCallback(() => {
       loadPayments();
@@ -48,143 +47,80 @@ const PaymentsScreen: React.FC = () => {
   );
 
   const loadPayments = async () => {
-
     setLoading(true);
 
     try {
-
       const userPayments = await PaymentService.getUserPayments();
       const paymentSummary = await PaymentService.getPaymentSummary();
 
       setPayments(userPayments as any);
       setSummary(paymentSummary);
-
     } catch (error) {
-
       console.log("Load payments error:", error);
-
     }
 
     setLoading(false);
-
-  };
-
-  /**
-   * GLOBAL PAY NOW BUTTON
-   */
-  const handlePayNow = async () => {
-
-    try {
-
-      const result = await PaymentService.createXenditPayment(
-        500,
-        "maintenance",
-        "gcash"
-      );
-
-      console.log("PAYMENT RESULT:", result);
-
-      if (result.success && result.invoice_url) {
-
-        await Linking.openURL(result.invoice_url);
-
-      } else {
-
-        Alert.alert("Payment Error", result.error || "Failed to create invoice");
-
-      }
-
-    } catch (error) {
-
-      console.log(error);
-      Alert.alert("Error", "Failed to create payment");
-
-    }
-
   };
 
   /**
    * PAY EXISTING PAYMENT
    */
   const handlePayExisting = async (payment: any) => {
-
     try {
+      const result = await PaymentService.createXenditPayment(payment.id);
 
-      const result = await PaymentService.createXenditPayment(
-        payment.amount,
-        payment.payment_type,
-        payment.payment_method
-      );
+      console.log("PAYMENT RESULT:", result);
 
-      if (result.success && result.invoice_url) {
-
-        await Linking.openURL(result.invoice_url);
-
+      if (result.success && result.data?.invoice_url) {
+        await Linking.openURL(result.data.invoice_url);
       } else {
-
-        Alert.alert("Payment Error", result.error || "Failed to create invoice");
-
+        Alert.alert(
+          "Payment Error",
+          result?.message || "Failed to create invoice"
+        );
       }
-
     } catch (error) {
-
       console.log(error);
       Alert.alert("Error", "Failed to create payment");
-
     }
-
   };
 
   const getStatusColor = (status: string) => {
-
     switch (status) {
-
       case "verified":
         return colors.success;
-
       case "pending":
         return colors.warning;
-
       case "rejected":
         return colors.error;
-
       default:
         return colors.textSecondary;
-
     }
-
   };
 
   if (loading) {
-
     return (
       <View style={commonStyles.centeredContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
-
   }
 
   return (
-
     <View style={commonStyles.container}>
 
       {/* HEADER */}
       <View style={styles.header}>
-
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Text style={styles.backButtonText}>
-            ← Back
-          </Text>
+          <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>
           Balances & Payments
         </Text>
-
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -217,16 +153,6 @@ const PaymentsScreen: React.FC = () => {
           </View>
 
         </View>
-
-        {/* GLOBAL PAY NOW */}
-        <TouchableOpacity
-          style={styles.payNowButton}
-          onPress={handlePayNow}
-        >
-          <Text style={styles.payNowButtonText}>
-            Pay Maintenance Fee (₱500)
-          </Text>
-        </TouchableOpacity>
 
         {/* PAYMENT LIST */}
         <View style={commonStyles.card}>
@@ -310,9 +236,7 @@ const PaymentsScreen: React.FC = () => {
       </ScrollView>
 
     </View>
-
   );
-
 };
 
 const styles = StyleSheet.create({
@@ -360,20 +284,6 @@ const styles = StyleSheet.create({
   summaryAmount: {
     color: colors.surface,
     fontWeight: "bold",
-  },
-
-  payNowButton: {
-    backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: spacing.md,
-  },
-
-  payNowButtonText: {
-    color: colors.surface,
-    fontWeight: "bold",
-    fontSize: 16,
   },
 
   sectionTitle: {

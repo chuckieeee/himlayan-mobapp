@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { STORAGE_KEYS } from "@/config/api";
 
 const API_URL = "https://himlayangpilipino.com/api";
 
@@ -14,8 +15,13 @@ export interface Payment {
 
 export class PaymentService {
 
+  /**
+   * GET USER PAYMENTS
+   */
   static async getUserPayments(): Promise<Payment[]> {
-    const token = await AsyncStorage.getItem("auth_token");
+    const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+
+    console.log("TOKEN (PAYMENTS):", token);
 
     const response = await fetch(`${API_URL}/payments`, {
       method: "GET",
@@ -27,9 +33,16 @@ export class PaymentService {
     });
 
     const text = await response.text();
-    //console.log("PAYMENTS RAW:", text);
+    console.log("PAYMENTS RAW:", text);
 
-    const data = JSON.parse(text);
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.log("❌ PAYMENTS NOT JSON:", text);
+      return [];
+    }
 
     if (data.success) {
       return data.data;
@@ -38,12 +51,17 @@ export class PaymentService {
     return [];
   }
 
+  /**
+   * CREATE XENDIT PAYMENT
+   */
   static async createXenditPayment(
     amount: number,
     paymentType: string,
     paymentMethod: string = "gcash"
   ) {
-    const token = await AsyncStorage.getItem("auth_token");
+    const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+
+    console.log("TOKEN (XENDIT):", token);
 
     const response = await fetch(`${API_URL}/payments/xendit`, {
       method: "POST",
@@ -60,11 +78,29 @@ export class PaymentService {
     });
 
     const text = await response.text();
-    //console.log("XENDIT RAW RESPONSE:", text);
+    console.log("🔥 XENDIT RAW RESPONSE:", text);
 
-    return JSON.parse(text);
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.log("❌ NOT JSON RESPONSE:", text);
+      throw new Error("Server returned invalid response");
+    }
+
+    // 🔥 SHOW ACTUAL BACKEND ERROR
+    if (!response.ok) {
+      console.log("❌ BACKEND ERROR:", data);
+      throw new Error(data.message || "Payment failed");
+    }
+
+    return data;
   }
 
+  /**
+   * PAYMENT SUMMARY
+   */
   static async getPaymentSummary() {
     const payments = await this.getUserPayments();
 

@@ -13,7 +13,7 @@ class ApiClient {
 
   private async getHeaders(): Promise<HeadersInit> {
     const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
-
+    
     return {
       'Content-Type': 'application/json',
       Accept: 'application/json',

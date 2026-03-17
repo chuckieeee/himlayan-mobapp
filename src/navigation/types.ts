@@ -1,7 +1,6 @@
 export type RootStackParamList = {
   // Auth
   Login: undefined;
-  Register: undefined;
 
   // Main app with bottom tabs
   MainTabs: undefined;

@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/navigation/types';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyAFLUi1PfE9oqHFHV6f2NazYgW8HpRRa9k';
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCMzGhdFY7p7pbNGJnZo4GoAMS10-DyE9E';
 
 interface Plot {
   latitude: string | number;
@@ -26,29 +26,16 @@ interface Props {
 }
 
 interface Step {
-  distance: {
-    text: string;
-    value: number;
-  };
-  duration: {
-    text: string;
-    value: number;
-  };
+  distance: { text: string; value: number };
+  duration: { text: string; value: number };
   html_instructions: string;
-  start_location: {
-    latitude: number;
-    longitude: number;
-  };
-  end_location: {
-    latitude: number;
-    longitude: number;
-  };
+  start_location: { latitude: number; longitude: number };
+  end_location: { latitude: number; longitude: number };
 }
 
 const GraveMapScreen: React.FC<Props> = ({ route }) => {
 
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-
   const { plot } = route.params;
 
   const latitude = Number(plot.latitude);
@@ -66,15 +53,13 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
 
   const [region, setRegion] = useState<Region | null>(null);
 
+  const [isFollowing, setIsFollowing] = useState(true);
+
   const cleanInstruction = (html: string) => {
-  let text = html.replace(/<[^>]+>/g, '');
-
-  // remove unwanted phrases
-  text = text.replace(/Restricted usage road/gi, '');
-  text = text.replace(/\s+/g, ' ').trim();
-
-  return text;
-};
+    let text = html.replace(/<[^>]+>/g, '');
+    text = text.replace(/Restricted usage road/gi, '');
+    return text.replace(/\s+/g, ' ').trim();
+  };
 
   const calculateDistance = (
     lat1: number,
@@ -102,7 +87,6 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
 
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-
       if (status !== 'granted') return;
 
       const loc = await Location.getCurrentPositionAsync({});
@@ -121,7 +105,6 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           distanceInterval: 1,
         },
         loc => {
-
           const coords = loc.coords;
           setUserLocation(coords);
 
@@ -133,25 +116,25 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           );
 
           setDistance(dist);
-
           updateCurrentStep(coords);
 
-          mapRef.current?.animateCamera({
-            center: {
-              latitude: coords.latitude,
-              longitude: coords.longitude,
-            },
-            zoom: 18,
-          });
+          if (isFollowing) {
+            mapRef.current?.animateCamera({
+              center: {
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+              },
+              zoom: 18,
+            });
+          }
         }
       );
     })();
 
     return () => subscription?.remove();
-  }, [steps]);
+  }, [steps, isFollowing]);
 
   const updateCurrentStep = (coords: Location.LocationObjectCoords) => {
-
     if (!steps.length) return;
 
     const step = steps[currentStepIndex];
@@ -180,21 +163,14 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
   }
 
   return (
-
     <View style={styles.container}>
 
       {/* HEADER */}
       <View style={styles.header}>
-
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
-
         <Text style={styles.headerTitle}>Navigate to Grave</Text>
-
       </View>
 
       {/* NAV BOX */}
@@ -203,20 +179,40 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           <Text style={styles.navText}>
             {cleanInstruction(currentStep.html_instructions)}
           </Text>
-
           <Text style={styles.navDistance}>
             in {currentStep.distance.text}
           </Text>
         </View>
       )}
 
-      {/* DISTANCE BOX */}
+      {/* DISTANCE + BUTTON */}
       {distance !== null && (
-        <View style={styles.distanceBox}>
-          <Text style={styles.distanceText}>
-            {distance.toFixed(0)} meters away
-          </Text>
-        </View>
+        <>
+          <View style={styles.distanceBox}>
+            <Text style={styles.distanceText}>
+              {distance.toFixed(0)} meters away
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.recenterButton}
+            onPress={() => {
+              if (!userLocation) return;
+
+              setIsFollowing(true);
+
+              mapRef.current?.animateCamera({
+                center: {
+                  latitude: userLocation.latitude,
+                  longitude: userLocation.longitude,
+                },
+                zoom: 18,
+              });
+            }}
+          >
+            <Text style={styles.recenterText}>Re-center</Text>
+          </TouchableOpacity>
+        </>
       )}
 
       <MapView
@@ -232,14 +228,10 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
           }
         }
         showsUserLocation
-        followsUserLocation
+        onPanDrag={() => setIsFollowing(false)}
       >
-
         <Marker
-          coordinate={{
-            latitude,
-            longitude,
-          }}
+          coordinate={{ latitude, longitude }}
           title={`Plot ${plot.plot_number}`}
           description={`Section ${plot.section}`}
         />
@@ -250,27 +242,19 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
               latitude: userLocation.latitude,
               longitude: userLocation.longitude,
             }}
-            destination={{
-              latitude,
-              longitude,
-            }}
+            destination={{ latitude, longitude }}
             apikey={GOOGLE_MAPS_API_KEY}
             strokeWidth={6}
             strokeColor="#4285F4"
-            mode="WALKING"
+            mode="DRIVING"
             onReady={result => {
-
               const routeSteps = result.legs[0].steps as unknown as Step[];
-
               setSteps(routeSteps);
-
             }}
             onError={err => console.log('Directions error:', err)}
           />
         )}
-
       </MapView>
-
     </View>
   );
 };
@@ -278,10 +262,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
 export default GraveMapScreen;
 
 const styles = StyleSheet.create({
-
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
 
   map: {
     width: Dimensions.get('window').width,
@@ -298,10 +279,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E4D2B',
     padding: 15,
     paddingTop: 50,
-  },
-
-  backButton: {
-    marginBottom: 5,
   },
 
   backButtonText: {
@@ -341,7 +318,7 @@ const styles = StyleSheet.create({
 
   distanceBox: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 80,
     alignSelf: 'center',
     backgroundColor: 'white',
     paddingHorizontal: 16,
@@ -356,4 +333,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  recenterButton: {
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    elevation: 5,
+    zIndex: 100,
+  },
+
+  recenterText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+  },
 });

@@ -51,16 +51,17 @@ const QRScannerScreen: React.FC = () => {
       console.log('Extracted code:', code);
 
       //  Correct API route
-      const response = await api.get(`/qr-codes/${code}`);
+    const response = await api.get(`/public/grave/${code}`);
 
-      if (!response.success) {
-        throw new Error(response.message);
-      }
+    console.log("FULL RESPONSE:", response);
 
-      const qrData = response.data.qr_code;
-      const burialRecord = qrData.burial_record;
+    if (!response.success) {
+      throw new Error(response.message);
+    }
 
-      navigation.navigate('GraveDetails', {
+    const burialRecord = response.data;
+
+    navigation.navigate('GraveDetails', {
       burialRecord: burialRecord,
     });
 

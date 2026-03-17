@@ -11,10 +11,24 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
 import { GraveService } from '@services/GraveService';
-import { Grave } from '@data/mockData';
 import { colors, spacing, typography } from '@styles/theme';
 import { commonStyles } from '@styles/commonStyles';
 import MapView, { Marker } from 'react-native-maps';
+
+interface Grave {
+  deceasedName: string;
+  section?: string;
+  lotNumber?: string;
+  birthDate?: string;
+  deathDate?: string;
+  burialDate?: string;
+  obituary?: string;
+  qrCode?: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+}
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 type GraveDetailsRouteProp = RouteProp<RootStackParamList, 'GraveDetails'>;
@@ -30,10 +44,8 @@ const GraveDetailsScreen: React.FC = () => {
 
   useEffect(() => {
     if (burialRecord) {
-      // QR flow (already has data)
       mapAndSetGrave(burialRecord);
     } else if (graveId) {
-      // Search flow (needs fetch)
       loadGraveDetails();
     } else {
       setLoading(false);
@@ -43,17 +55,16 @@ const GraveDetailsScreen: React.FC = () => {
   const mapAndSetGrave = (apiGrave: any) => {
     const mappedGrave: Grave = {
       deceasedName: apiGrave.deceased_name,
-      section: apiGrave.plot.section,
-      lotNumber: apiGrave.plot.plot_number,
+      section: apiGrave.location?.section,
+      lotNumber: apiGrave.location?.plot_number,
       birthDate: apiGrave.birth_date,
       deathDate: apiGrave.death_date,
       burialDate: apiGrave.burial_date,
-      familyContact: apiGrave.contact_name,
+      obituary: apiGrave.obituary,
       qrCode: apiGrave.qr_code?.code ?? 'N/A',
-
       location: {
-        latitude: Number(apiGrave.plot.latitude),
-        longitude: Number(apiGrave.plot.longitude),
+        latitude: Number(apiGrave.location?.latitude),
+        longitude: Number(apiGrave.location?.longitude),
       },
     };
 
@@ -112,9 +123,15 @@ const GraveDetailsScreen: React.FC = () => {
     );
   }
 
-  const formatDate = (isoDate?: string) => {
-    if (!isoDate) return '—';
-    const date = new Date(isoDate);
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '—';
+
+    if (isNaN(Date.parse(dateStr))) {
+      return dateStr;
+    }
+
+    const date = new Date(dateStr);
+
     return date.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'long',
@@ -138,8 +155,18 @@ const GraveDetailsScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Main Info */}
         <View style={[commonStyles.card, styles.mainCard]}>
-          <Text style={styles.monumentIcon}>🏛️</Text>
+          {grave.obituary ? (
+            <Text numberOfLines={3} style={styles.obituaryText}>
+              "{grave.obituary}"
+            </Text>
+          ) : (
+            <Text style={styles.noObituaryText}>
+              No obituary available
+            </Text>
+          )}
+
           <Text style={styles.deceasedName}>{grave.deceasedName}</Text>
+
           <View style={styles.sectionBadge}>
             <Text style={styles.sectionBadgeText}>{grave.section}</Text>
           </View>
@@ -153,7 +180,6 @@ const GraveDetailsScreen: React.FC = () => {
           <DetailRow label="Birth Date" value={formatDate(grave.birthDate)} />
           <DetailRow label="Death Date" value={formatDate(grave.deathDate)} />
           <DetailRow label="Burial Date" value={formatDate(grave.burialDate)} />
-          <DetailRow label="Contact" value={grave.familyContact || '—'} />
         </View>
 
         {/* Location Card */}
@@ -190,7 +216,7 @@ const GraveDetailsScreen: React.FC = () => {
             onPress={handleNavigate}
           >
             <Text style={commonStyles.buttonText}>
-              📍 Navigate to Location
+              Navigate to Location
             </Text>
           </TouchableOpacity>
         </View>
@@ -230,8 +256,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.primaryLight,
   },
-  monumentIcon: {
-    fontSize: 64,
+  obituaryText: {
+    ...typography.body1,
+    color: colors.surface,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginBottom: spacing.md,
+  },
+  noObituaryText: {
+    ...typography.body2,
+    color: colors.surface,
     marginBottom: spacing.md,
   },
   deceasedName: {
