@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '@/config/api';
 import type { User } from '@/types/database';
 import { API_BASE_URL } from '@/config/api';
-import { getExpoPushToken } from '@services/PushNotificationService';
+import { getExpoPushToken, getFCMToken } from '@services/PushNotificationService';
 
 console.log("CURRENT API BASE URL:", API_BASE_URL);
 
@@ -35,6 +35,11 @@ export class AuthService {
 
     console.log("LOGIN RESPONSE:", data);
 
+    // If backend returns an error message, throw it
+    if (data.message && !data.data?.user) {
+      throw new Error(data.message);
+    }
+
     // ✅ FIX — read correct Laravel structure
     const user = data.data?.user;
     const token = data.data?.token;
@@ -55,27 +60,30 @@ export class AuthService {
     await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
 
     // -------------------------------------------------
-    // REGISTER PUSH NOTIFICATION TOKEN
+    // REGISTER PUSH NOTIFICATION TOKENS (Both Expo and FCM)
     // -------------------------------------------------
     try {
-      const pushToken = await getExpoPushToken();
+      const expoToken = await getExpoPushToken();
+      const fcmToken = await getFCMToken();
 
-      if (pushToken) {
+      if (expoToken || fcmToken) {
+        const tokenData: any = {};
+        if (expoToken) tokenData.expo_push_token = expoToken;
+        if (fcmToken) tokenData.fcm_token = fcmToken;
+
         await fetch(`${API_BASE_URL}/save-token`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            expo_push_token: pushToken,
-          }),
+          body: JSON.stringify(tokenData),
         });
 
-        console.log('Push token saved to server');
+        console.log('Push tokens saved to server:', { expoToken: !!expoToken, fcmToken: !!fcmToken });
       }
     } catch (error) {
-      console.log('Failed to register push token:', error);
+      console.log('Failed to register push tokens:', error);
     }
 
     return user;

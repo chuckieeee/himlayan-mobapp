@@ -44,6 +44,7 @@ interface Plot {
   plot_number: string;
   section: string;
   deceased_name?: string;
+  burial_record?: any;
 }
 
 const CustomerDashboardScreen: React.FC = () => {
@@ -137,6 +138,27 @@ const CustomerDashboardScreen: React.FC = () => {
     setRefreshing(true);
     await Promise.all([loadAnnouncements(), loadMyPlots()]);
     setRefreshing(false);
+  };
+
+  const handlePlotPress = async (plot: Plot) => {
+    try {
+      // The burial record is nested inside the plot object
+      if (plot.burial_record && plot.burial_record.id) {
+        const burialRecordId = plot.burial_record.id;
+        
+        const response = await api.get(`/burial-records/${burialRecordId}`);
+        
+        if (response.success && response.data) {
+          navigation.navigate('GraveDetails', { burialRecord: response.data } as any);
+        } else {
+          Alert.alert('Error', 'Could not load plot details');
+        }
+      } else {
+        Alert.alert('Error', 'Burial record not found for this plot');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Failed to load plot details');
+    }
   };
 
   const getGreeting = () => {
@@ -250,13 +272,17 @@ const CustomerDashboardScreen: React.FC = () => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>My Plots</Text>
             {myPlots.slice(0, 3).map(plot => (
-              <View key={plot.id} style={styles.plotCard}>
+              <TouchableOpacity 
+                key={plot.id} 
+                style={styles.plotCard}
+                onPress={() => handlePlotPress(plot)}
+              >
                 <Text style={styles.plotNumber}>{plot.plot_number}</Text>
                 <Text style={styles.plotSection}>Section: {plot.section}</Text>
                 {plot.deceased_name && (
                   <Text style={styles.plotDeceased}>{plot.deceased_name}</Text>
                 )}
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -371,9 +397,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   plotNumber: {
     ...typography.body1,

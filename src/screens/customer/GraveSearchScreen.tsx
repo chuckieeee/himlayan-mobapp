@@ -206,7 +206,6 @@ const GraveSearchScreen: React.FC = () => {
               </>
             ) : (
               <View style={styles.emptyState}>
-                <Text style={styles.emptyIcon}>😔</Text>
                 <Text style={styles.emptyTitle}>No Results Found</Text>
                 <Text style={styles.emptySubtitle}>
                   "{searchQuery}" was not found in our database

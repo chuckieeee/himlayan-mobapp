@@ -26,7 +26,7 @@ const AppNavigator: React.FC = () => {
   useEffect(() => {
     checkAuthStatus();
 
-    // Check auth status every 500ms to detect login/logout
+    // Check auth status every 2s to detect login/logout
     const interval = setInterval(checkAuthStatus, 2000);
 
     return () => clearInterval(interval);

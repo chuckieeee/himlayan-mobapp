@@ -53,22 +53,25 @@ const GraveDetailsScreen: React.FC = () => {
   }, [graveId, burialRecord]);
 
   const mapAndSetGrave = (apiGrave: any) => {
+    // Handle both API formats:
+    // 1. QR scanner format: apiGrave.location (direct)
+    // 2. Burial record API format: apiGrave.plot (nested)
+    const locationData = apiGrave.location || apiGrave.plot || {};
+    
     const mappedGrave: Grave = {
       deceasedName: apiGrave.deceased_name,
-      section: apiGrave.location?.section,
-      lotNumber: apiGrave.location?.plot_number,
+      section: locationData.section,
+      lotNumber: locationData.plot_number,
       birthDate: apiGrave.birth_date,
       deathDate: apiGrave.death_date,
       burialDate: apiGrave.burial_date,
       obituary: apiGrave.obituary,
       qrCode: apiGrave.qr_code?.code ?? 'N/A',
       location: {
-        latitude: Number(apiGrave.location?.latitude),
-        longitude: Number(apiGrave.location?.longitude),
+        latitude: Number(locationData.latitude),
+        longitude: Number(locationData.longitude),
       },
     };
-
-    console.log('Mapped grave:', mappedGrave);
 
     setGrave(mappedGrave);
     setLoading(false);

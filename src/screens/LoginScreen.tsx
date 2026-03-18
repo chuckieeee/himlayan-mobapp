@@ -42,20 +42,32 @@ const LoginScreen: React.FC = () => {
     } catch (error: any) {
       console.error('Login error:', error);
       
+      // Check for specific error types
+      const errorMessage = error?.message || 'Something went wrong';
       
       // Special handling for role restriction errors
       if (
         error.code === 'ROLE_NOT_ALLOWED' ||
-        error.message?.includes('not supported on the mobile app')
+        errorMessage.includes('not supported on the mobile app')
       ) {
         Alert.alert(
           'Access Denied',
-          error.message ||
+          errorMessage ||
             'Staff and Admin accounts are not supported on the mobile app. Please use the web system.',
           [{ text: 'OK', style: 'default' }]
         );
-      } else {
-        Alert.alert('Login Failed', error?.message || 'Something went wrong');
+      } 
+      // Check for wrong password/invalid credentials
+      else if (
+        errorMessage.includes('Invalid credentials') ||
+        errorMessage.includes('wrong password') ||
+        errorMessage.includes('Incorrect') ||
+        errorMessage.includes('Invalid login')
+      ) {
+        Alert.alert('Invalid Password', 'The password you entered is incorrect. Please try again.');
+      }
+      else {
+        Alert.alert('Login Failed', errorMessage);
       }
     } finally {
       setLoading(false);

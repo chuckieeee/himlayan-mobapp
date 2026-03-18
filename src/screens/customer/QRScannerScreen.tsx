@@ -94,7 +94,6 @@ const QRScannerScreen: React.FC = () => {
               />
             ) : (
               <>
-                <Text style={styles.cameraIcon}>📷</Text>
                 <Text style={styles.instructionText}>
                   Tap start to scan QR code
                 </Text>
@@ -171,11 +170,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
-  },
-
-  cameraIcon: {
-    fontSize: 64,
-    marginBottom: spacing.md,
   },
 
   instructionText: {

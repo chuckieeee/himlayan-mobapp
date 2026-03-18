@@ -226,9 +226,22 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
             longitudeDelta: 0.005,
           }
         }
-        showsUserLocation
         onPanDrag={() => setIsFollowing(false)}
       >
+        {userLocation && (
+          <Marker
+            coordinate={{
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
+            }}
+            title="You are here"
+          >
+            <View style={styles.userLocationMarker}>
+              <View style={styles.userLocationDot} />
+            </View>
+          </Marker>
+        )}
+
         <Marker
           coordinate={{ latitude, longitude }}
           title={`Plot ${plot.plot_number}`}
@@ -348,5 +361,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: 'black',
+  },
+
+  userLocationMarker: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  userLocationDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#4285F4',
+    borderWidth: 2,
+    borderColor: 'white',
   },
 });

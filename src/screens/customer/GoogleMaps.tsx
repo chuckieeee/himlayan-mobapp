@@ -13,16 +13,22 @@ import { commonStyles } from '@styles/commonStyles';
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
+// Cemetery center coordinates
+const CEMETERY_CENTER = {
+  latitude: 14.682462,
+  longitude: 121.0530409,
+};
+
 const GoogleMaps: React.FC = () => {
 
   const navigation = useNavigation<NavigationProp>();
 
   const [location, setLocation] = useState<any>(null);
-  const [plots, setPlots] = useState<any[]>([]);
+  const [landmarks, setLandmarks] = useState<any[]>([]);
 
   useEffect(() => {
     getLocation();
-    loadPlots();
+    loadLandmarks();
   }, []);
 
   const getLocation = async () => {
@@ -43,19 +49,17 @@ const GoogleMaps: React.FC = () => {
     }
   };
 
-  const loadPlots = async () => {
+  const loadLandmarks = async () => {
     try {
+      const res = await apiRequest('/map/markers');
 
-      const res = await apiRequest('/plots');
+      // Filter to only show landmarks
+      const allMarkers = res?.data || [];
+      const landmarkArray = allMarkers.filter((marker: any) => marker.type === 'landmark');
 
-      console.log('PLOT RESPONSE:', res);
-
-      const plotArray = res?.data?.data ?? [];
-
-      setPlots(plotArray);
-
+      setLandmarks(landmarkArray);
     } catch (err) {
-      console.log('Plot fetch error:', err);
+      console.log('Landmark fetch error:', err);
     }
   };
 
@@ -94,31 +98,25 @@ const GoogleMaps: React.FC = () => {
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={{
-          latitude: location.latitude,
-          longitude: location.longitude,
+          latitude: CEMETERY_CENTER.latitude,
+          longitude: CEMETERY_CENTER.longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
         showsUserLocation
-        showsMyLocationButton
       >
 
-        {/* User Marker */}
-        <Marker
-          coordinate={location}
-          title="You are here"
-        />
-
-        {/* Cemetery Plot Markers */}
-        {plots.map(plot => (
+        {/* Landmark Markers */}
+        {landmarks.map(landmark => (
 
           <Marker
-            key={plot.id}
+            key={landmark.id}
             coordinate={{
-              latitude: Number(plot.latitude),
-              longitude: Number(plot.longitude),
+              latitude: Number(landmark.latitude),
+              longitude: Number(landmark.longitude),
             }}
-            title={`Plot ${plot.plot_number}`}
+            title={landmark.name}
+            pinColor="#183a67"
           />
 
         ))}

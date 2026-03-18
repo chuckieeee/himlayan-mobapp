@@ -16,6 +16,7 @@ import { RootStackParamList } from "../../navigation/types";
 import { STORAGE_KEYS, API_BASE_URL } from "../../config/api";
 import { colors, spacing, typography } from "@styles/theme";
 import { commonStyles } from "@styles/commonStyles";
+import api from "@services/api";
 
 type NavigationProp = any;
 
@@ -24,20 +25,26 @@ interface ProfileData {
   email?: string;
   phone?: string;
   avatar?: string;
-  plots?: number;
+}
+
+interface Plot {
+  id: number;
+  plot_number: string;
+  section: string;
 }
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
   const [user, setUser] = useState<ProfileData | null>(null);
+  const [plotCount, setPlotCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadUser();
+    loadProfileData();
   }, []);
 
-  const loadUser = async () => {
+  const loadProfileData = async () => {
     try {
       const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
@@ -58,14 +65,29 @@ const ProfileScreen: React.FC = () => {
         email: userData.email,
         phone: userData.phone,
         avatar: userData.avatar,
-        plots: userData.plots || 0, // optional
       });
+
+      // Load user's plots
+      loadMyPlots();
 
     } catch (error) {
       console.log("Profile load error:", error);
     }
 
     setLoading(false);
+  };
+
+  const loadMyPlots = async () => {
+    try {
+      const response = await api.get('/member/my-plots');
+      if (response.success) {
+        const plots = response.data || [];
+        setPlotCount(plots.length);
+      }
+    } catch (err) {
+      console.log('No plots found or API not ready');
+      setPlotCount(0);
+    }
   };
 
   if (loading) {
@@ -113,7 +135,7 @@ const ProfileScreen: React.FC = () => {
         <View style={styles.plotCard}>
           <Text style={styles.plotTitle}>Owned Plots</Text>
           <Text style={styles.plotValue}>
-            {user?.plots ?? 0}
+            {plotCount}
           </Text>
         </View>
 
