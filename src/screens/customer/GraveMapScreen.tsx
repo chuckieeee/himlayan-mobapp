@@ -7,8 +7,7 @@ import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/navigation/types';
-
-const GOOGLE_MAPS_API_KEY = 'AIzaSyCMzGhdFY7p7pbNGJnZo4GoAMS10-DyE9E';
+import { GOOGLE_MAPS_API_KEY } from '@/config/api';
 
 interface Plot {
   latitude: string | number;

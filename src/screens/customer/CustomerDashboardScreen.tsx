@@ -17,6 +17,17 @@ import { User } from '@data/mockData';
 import { colors, spacing, typography } from '@styles/theme';
 import { commonStyles } from '@styles/commonStyles';
 import api from '@services/api';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 type NavigationProp = BottomTabNavigationProp<BottomTabParamList, 'Dashboard'>;
 
@@ -47,10 +58,29 @@ const CustomerDashboardScreen: React.FC = () => {
     loadUser();
     loadAnnouncements();
     loadMyPlots();
+    
+  const notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
+    Alert.alert(
+      notification.request.content.title || "New Announcement",
+      notification.request.content.body || ""
+    );
+  });
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+    const data = response.notification.request.content.data;
 
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
-  }, []);
+    if (data?.announcement_id) {
+      navigation.navigate('Profile'); // change if needed
+    }
+  });
+
+  const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+
+  return () => {
+    clearInterval(timer);
+    notificationSubscription.remove();
+    responseListener.remove();  
+  };
+}, []);
 
   const loadUser = async () => {
     const currentUser = await AuthService.getCurrentUser();

@@ -50,7 +50,7 @@ const PaymentsScreen: React.FC = () => {
     setLoading(true);
 
     try {
-      const userPayments = await PaymentService.getUserPayments();
+      const userPayments = await PaymentService.getPaymentHistory();
       const paymentSummary = await PaymentService.getPaymentSummary();
 
       setPayments(userPayments as any);
@@ -63,16 +63,16 @@ const PaymentsScreen: React.FC = () => {
   };
 
   /**
-   * PAY EXISTING PAYMENT
+   *  PAY EXISTING PAYMENT (NEW FLOW)
    */
   const handlePayExisting = async (payment: any) => {
     try {
-      const result = await PaymentService.createXenditPayment(payment.id);
+      const result = await PaymentService.checkoutPayment(payment.id, "gcash");
 
       console.log("PAYMENT RESULT:", result);
 
-      if (result.success && result.data?.invoice_url) {
-        await Linking.openURL(result.data.invoice_url);
+      if (result.success && result.checkout_url) {
+        await Linking.openURL(result.checkout_url);
       } else {
         Alert.alert(
           "Payment Error",
@@ -180,9 +180,10 @@ const PaymentsScreen: React.FC = () => {
 
                   <View>
                     <Text style={styles.paymentDescription}>
-                      {payment.payment_type}
+                    {(payment.description || payment.notes || payment.payment_type)
+                      .replace(/\(Request\s*#\d+\)/i, "")
+                      .trim()}
                     </Text>
-
                     <Text style={styles.paymentId}>
                       Ref: {payment.reference_number || payment.id}
                     </Text>
@@ -203,12 +204,12 @@ const PaymentsScreen: React.FC = () => {
 
                 <View style={styles.paymentDetails}>
 
-                  <View style={styles.paymentRow}>
-                    <Text style={styles.paymentLabel}>Amount:</Text>
-                    <Text style={styles.paymentAmount}>
-                      ₱{payment.amount}
-                    </Text>
-                  </View>
+                <Text style={styles.paymentAmount}>
+                  ₱{Number(payment.amount || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </Text>
 
                   {payment.status === "pending" && (
 
@@ -300,6 +301,7 @@ const styles = StyleSheet.create({
   paymentHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
   },
 
   paymentDescription: {

@@ -39,7 +39,7 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ focused, color }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '🏠' : '🏘️'}</Text>
+            <Text style={{ fontSize: 24 }}>🏠</Text>
           ),
         }}
       />
@@ -49,7 +49,7 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarLabel: 'Search',
           tabBarIcon: ({ focused, color }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '🔍' : '🔎'}</Text>
+            <Text style={{ fontSize: 24 }}>🔎</Text>
           ),
         }}
       />
@@ -59,7 +59,7 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarLabel: 'QR Scan',
           tabBarIcon: ({ focused, color }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '📷' : '📸'}</Text>
+            <Text style={{ fontSize: 24 }}>📸</Text>
           ),
         }}
       />
@@ -69,7 +69,7 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarLabel: 'Announcements',
           tabBarIcon: ({ focused, color }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '🔔' : '🔕'}</Text>
+            <Text style={{ fontSize: 24 }}>🔔</Text>
           ),
         }}
       />
@@ -79,7 +79,7 @@ const BottomTabNavigator: React.FC = () => {
         options={{
           tabBarLabel: 'Payments',
           tabBarIcon: ({ focused, color }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '💳' : '💰'}</Text>
+            <Text style={{ fontSize: 24 }}>💳</Text>
           ),
         }}
       />

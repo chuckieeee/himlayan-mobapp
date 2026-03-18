@@ -10,6 +10,7 @@ import GraveDetailsScreen from '@screens/customer/GraveDetailsScreen';
 import GoogleMaps from '@screens/customer/GoogleMaps';
 import GraveMapScreen from '@screens/customer/GraveMapScreen';
 import ProfileScreen from '@screens/customer/ProfileScreen';
+import AnnouncementDetailsScreen from '@screens/customer/AnnouncementDetailsScreen';
 
 // Import bottom tab navigator
 import BottomTabNavigator from './BottomTabNavigator';
@@ -74,6 +75,10 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen name="Map" component={GoogleMaps} />
             <Stack.Screen name="GraveMap" component={GraveMapScreen} />
             <Stack.Screen name="UserProfile" component={ProfileScreen} />
+            <Stack.Screen 
+              name="AnnouncementDetails" 
+              component={AnnouncementDetailsScreen} 
+            />
           </>
         )}
       </Stack.Navigator>

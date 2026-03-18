@@ -96,34 +96,40 @@ return ( <View style={commonStyles.container}>
       </View>
     ) : (
       announcements.map((announcement) => (
-        <View key={announcement.id} style={styles.announcementCard}>
+    <TouchableOpacity
+      key={announcement.id}
+      style={styles.announcementCard}
+      onPress={() =>
+        navigation.navigate('AnnouncementDetails', { announcement })
+      }
+    >
 
-          {/* Badge */}
-          {announcement.type && (
-            <View style={[styles.badge, getBadgeStyle(announcement.type)]}>
-              <Text style={styles.badgeText}>
-                {announcement.type.toUpperCase()}
-              </Text>
-            </View>
-          )}
-
-          {/* Title */}
-          <Text style={styles.announcementTitle}>
-            {announcement.title}
+      {/* Badge */}
+      {announcement.type && (
+        <View style={[styles.badge, getBadgeStyle(announcement.type)]}>
+          <Text style={styles.badgeText}>
+            {announcement.type.toUpperCase()}
           </Text>
-
-          {/* Date */}
-          <Text style={styles.announcementMeta}>
-            {announcement.date}
-          </Text>
-
-          {/* Content */}
-          <Text style={styles.announcementMessage}>
-            {announcement.content}
-          </Text>
-
         </View>
-      ))
+      )}
+
+      {/* Title */}
+      <Text style={styles.announcementTitle}>
+        {announcement.title}
+      </Text>
+
+      {/* Date */}
+      <Text style={styles.announcementMeta}>
+        {announcement.date}
+      </Text>
+
+      {/* Content */}
+      <Text style={styles.announcementMessage} numberOfLines={2}>
+        {announcement.content}
+      </Text>
+
+    </TouchableOpacity>
+  ))
     )}
 
     {/* Info Note */}

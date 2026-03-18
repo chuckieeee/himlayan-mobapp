@@ -50,6 +50,7 @@ const ProfileScreen: React.FC = () => {
       });
 
       const resData = await response.json();
+      console.log(resData);
       const userData = resData.data;
 
       setUser({

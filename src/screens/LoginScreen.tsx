@@ -38,17 +38,18 @@ const LoginScreen: React.FC = () => {
     try {
       const user = await AuthService.login(email, password);
       // Navigation will be handled automatically by AppNavigator
-      console.log('✅ Logged in successfully:', user.name);
+      console.log('Logged in successfully:', user.name);
     } catch (error: any) {
       console.error('Login error:', error);
-
+      
+      
       // Special handling for role restriction errors
       if (
         error.code === 'ROLE_NOT_ALLOWED' ||
         error.message?.includes('not supported on the mobile app')
       ) {
         Alert.alert(
-          '🚫 Access Denied',
+          'Access Denied',
           error.message ||
             'Staff and Admin accounts are not supported on the mobile app. Please use the web system.',
           [{ text: 'OK', style: 'default' }]

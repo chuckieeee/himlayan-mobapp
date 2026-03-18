@@ -23,7 +23,7 @@ export class PaymentService {
 
     console.log("TOKEN (PAYMENTS):", token);
 
-    const response = await fetch(`${API_URL}/payments`, {
+    const response = await fetch(`${API_URL}/payments/my-dues`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -40,7 +40,7 @@ export class PaymentService {
     try {
       data = JSON.parse(text);
     } catch (e) {
-      console.log("❌ PAYMENTS NOT JSON:", text);
+      console.log("PAYMENTS NOT JSON:", text);
       return [];
     }
 
@@ -52,71 +52,94 @@ export class PaymentService {
   }
 
   /**
-   * CREATE XENDIT PAYMENT
+   * CHECKOUT EXISTING PAYMENT (NEW FLOW)
    */
-  static async createXenditPayment(
-    amount: number,
-    paymentType: string,
+  static async checkoutPayment(
+    paymentId: number,
     paymentMethod: string = "gcash"
   ) {
     const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
-    console.log("TOKEN (XENDIT):", token);
+    console.log("TOKEN (CHECKOUT):", token);
 
-    const response = await fetch(`${API_URL}/payments/xendit`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        amount,
-        payment_type: paymentType,
-        payment_method: paymentMethod,
-      }),
-    });
+    const response = await fetch(
+      `${API_URL}/payments/${paymentId}/checkout`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          payment_method: paymentMethod,
+        }),
+      }
+    );
 
     const text = await response.text();
-    console.log("🔥 XENDIT RAW RESPONSE:", text);
+    console.log(" CHECKOUT RAW RESPONSE:", text);
 
     let data;
 
     try {
       data = JSON.parse(text);
     } catch (e) {
-      console.log("❌ NOT JSON RESPONSE:", text);
+      console.log(" NOT JSON RESPONSE:", text);
       throw new Error("Server returned invalid response");
     }
 
-    // 🔥 SHOW ACTUAL BACKEND ERROR
     if (!response.ok) {
-      console.log("❌ BACKEND ERROR:", data);
-      throw new Error(data.message || "Payment failed");
+      console.log(" BACKEND ERROR:", data);
+      throw new Error(data.message || "Checkout failed");
     }
 
     return data;
+  }
+
+  //*Get Payment History//
+
+    static async getPaymentHistory() {
+    const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+
+    const response = await fetch(`${API_URL}/payments`, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+    return data.data || [];
   }
 
   /**
    * PAYMENT SUMMARY
    */
   static async getPaymentSummary() {
-    const payments = await this.getUserPayments();
+    const payments = await this.getPaymentHistory();
 
     let totalPaid = 0;
     let totalPending = 0;
     let totalOverdue = 0;
 
-    payments.forEach(payment => {
-      const amount = Number(payment.amount);
+    payments.forEach((payment: any) => {
+      const amount = Number(payment.amount || 0);
+      const status = (payment.status || "").toLowerCase();
 
-      if (payment.status === "verified") {
+      //  PAID
+      if (status === "verified") {
         totalPaid += amount;
       }
 
-      if (payment.status === "pending") {
+      //  PENDING (includes awaiting verification)
+      else if (status === "pending" || status === "awaiting_verification") {
         totalPending += amount;
+      }
+
+      //  OVERDUE
+      else if (status === "overdue") {
+        totalOverdue += amount;
       }
     });
 

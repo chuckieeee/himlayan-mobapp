@@ -23,6 +23,10 @@ export type RootStackParamList = {
   ReportDetails: { reportId: string };
   ViewFeedback: undefined;
   PostAnnouncement: undefined;
+  
+    AnnouncementDetails: {
+    announcement: any;
+  };
 };
 
 export type BottomTabParamList = {
