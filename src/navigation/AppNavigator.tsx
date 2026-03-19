@@ -10,6 +10,7 @@ import GraveDetailsScreen from '@screens/customer/GraveDetailsScreen';
 import GoogleMaps from '@screens/customer/GoogleMaps';
 import GraveMapScreen from '@screens/customer/GraveMapScreen';
 import ProfileScreen from '@screens/customer/ProfileScreen';
+import MyPlotsScreen from '@screens/customer/MyPlotsScreen';
 import AnnouncementDetailsScreen from '@screens/customer/AnnouncementDetailsScreen';
 import FeedbackScreen from '@screens/customer/FeedbackScreen';
 
@@ -76,6 +77,7 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen name="Map" component={GoogleMaps} />
             <Stack.Screen name="GraveMap" component={GraveMapScreen} />
             <Stack.Screen name="UserProfile" component={ProfileScreen} />
+            <Stack.Screen name="MyPlots" component={MyPlotsScreen} />
             <Stack.Screen 
               name="AnnouncementDetails" 
               component={AnnouncementDetailsScreen} 

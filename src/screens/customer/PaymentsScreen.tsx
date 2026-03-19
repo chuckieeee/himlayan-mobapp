@@ -75,9 +75,7 @@ const PaymentsScreen: React.FC = () => {
    */
   const handlePayExisting = async (payment: any) => {
     try {
-      const result = await PaymentService.checkoutPayment(payment.id, "gcash");
-
-      console.log("PAYMENT RESULT:", result);
+      const result = await PaymentService.checkoutPayment(payment.id);
 
       if (result.success && result.checkout_url) {
         await Linking.openURL(result.checkout_url);
@@ -322,6 +320,7 @@ const styles = StyleSheet.create({
 
   statusBadge: {
     padding: 5,
+    borderRadius: 12,
   },
 
   statusText: {
@@ -346,6 +345,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     marginTop: spacing.sm,
     alignItems: "center",
+    borderRadius: 12,
   },
 
   payButtonText: {

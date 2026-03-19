@@ -57,13 +57,22 @@ const ProfileScreen: React.FC = () => {
       });
 
       const resData = await response.json();
-      console.log(resData);
       const userData = resData.data;
+
+      // ⚠️ Handle token expiration (401 Unauthorized)
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log('⚠️ Token expired - clearing auth');
+          await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+          await AsyncStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        }
+        throw new Error(resData.message || 'Failed to load profile');
+      }
 
       setUser({
         fullName: userData.name,
         email: userData.email,
-        phone: userData.phone,
+        phone: userData.phone || userData.phone_number || userData.contact_number || userData.mobile,
         avatar: userData.avatar,
       });
 
@@ -83,6 +92,15 @@ const ProfileScreen: React.FC = () => {
       if (response.success) {
         const plots = response.data || [];
         setPlotCount(plots.length);
+        
+        // Get phone from first burial record's contact info
+        if (plots.length > 0) {
+          const firstPlot = plots[0];
+          
+          if (firstPlot.burial_record?.contact_phone) {
+            setUser(prevUser => prevUser ? { ...prevUser, phone: firstPlot.burial_record.contact_phone } : prevUser);
+          }
+        }
       }
     } catch (err) {
       console.log('No plots found or API not ready');
@@ -132,12 +150,17 @@ const ProfileScreen: React.FC = () => {
         </View>
 
         {/* PLOTS BOX */}
-        <View style={styles.plotCard}>
+        <TouchableOpacity 
+          style={styles.plotCard}
+          onPress={() => navigation.navigate('MyPlots')}
+          activeOpacity={0.7}
+        >
           <Text style={styles.plotTitle}>Owned Plots</Text>
           <Text style={styles.plotValue}>
             {plotCount}
           </Text>
-        </View>
+          <Text style={styles.plotTapText}>Tap to view details →</Text>
+        </TouchableOpacity>
 
         <Text style={styles.note}>
           Profile information can only be updated through the website.
@@ -212,6 +235,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: colors.primary,
+  },
+
+  plotTapText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '600',
+    marginTop: spacing.sm,
   },
 
   row: {

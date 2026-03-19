@@ -56,7 +56,7 @@ export class PaymentService {
    */
   static async checkoutPayment(
     paymentId: number,
-    paymentMethod: string = "gcash"
+    paymentMethod: string = "all"
   ) {
     const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
@@ -87,6 +87,16 @@ export class PaymentService {
     } catch (e) {
       console.log(" NOT JSON RESPONSE:", text);
       throw new Error("Server returned invalid response");
+    }
+
+    // ⚠️ Handle token expiration (401 Unauthorized)
+    if (response.status === 401) {
+      console.log('⚠️ Token expired or invalid - logging out');
+      await AsyncStorage.multiRemove([
+        STORAGE_KEYS.AUTH_TOKEN,
+        STORAGE_KEYS.CURRENT_USER,
+      ]);
+      throw new Error("Session expired. Please log in again.");
     }
 
     if (!response.ok) {
