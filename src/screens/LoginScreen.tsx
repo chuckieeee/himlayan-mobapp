@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '@/navigation/types';
 import { AuthService } from '@services/AuthService';
+import { getFCMToken } from '@services/PushNotificationService';
 import { colors, spacing, typography } from '@styles/theme';
 import { commonStyles } from '@styles/commonStyles';
 
@@ -37,6 +38,14 @@ const LoginScreen: React.FC = () => {
     setLoading(true);
     try {
       const user = await AuthService.login(email, password);
+      
+      // Register FCM token after successful login
+      const fcmToken = await getFCMToken();
+      if (fcmToken) {
+        console.log('✅ FCM Token obtained:', fcmToken);
+        // Token will be sent to backend via DataService in the dashboard
+      }
+      
       // Navigation will be handled automatically by AppNavigator
       console.log('Logged in successfully:', user.name);
     } catch (error: any) {

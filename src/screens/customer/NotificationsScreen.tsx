@@ -6,6 +6,7 @@ StyleSheet,
 ScrollView,
 ActivityIndicator,
 TouchableOpacity,
+RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -28,10 +29,7 @@ const NotificationsScreen: React.FC = () => {
 const navigation = useNavigation<NavigationProp>();
 const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 const [loading, setLoading] = useState(true);
-
-useEffect(() => {
-loadAnnouncements();
-}, []);
+const [refreshing, setRefreshing] = useState(false);
 
 const loadAnnouncements = async () => {
 setLoading(true);
@@ -46,6 +44,16 @@ console.error('Error loading announcements:', error);
 setLoading(false);
 }
 };
+
+const onRefresh = async () => {
+setRefreshing(true);
+await loadAnnouncements();
+setRefreshing(false);
+};
+
+useEffect(() => {
+loadAnnouncements();
+}, []);
 
 const getBadgeStyle = (type?: string) => {
 switch (type) {
@@ -85,7 +93,7 @@ return ( <View style={commonStyles.container}>
   </Text>
 
 </View>
-  <ScrollView contentContainerStyle={styles.scrollContent}>
+  <ScrollView contentContainerStyle={styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
 
     {announcements.length === 0 ? (
       <View style={styles.emptyContainer}>

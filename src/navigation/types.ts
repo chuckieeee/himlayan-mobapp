@@ -8,6 +8,7 @@ export type RootStackParamList = {
   // Customer/Visitor
   GraveDetails: { graveId: string };
   GraveMap: { plot: any };
+  Feedback: undefined;
 
   // Staff
   StaffDashboard: undefined;

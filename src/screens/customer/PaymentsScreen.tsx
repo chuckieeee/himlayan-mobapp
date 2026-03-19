@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Linking,
   Alert,
+  RefreshControl,
 } from "react-native";
 
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
@@ -35,16 +36,7 @@ const PaymentsScreen: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadPayments();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      loadPayments();
-    }, [])
-  );
+  const [refreshing, setRefreshing] = useState(false);
 
   const loadPayments = async () => {
     setLoading(true);
@@ -61,6 +53,22 @@ const PaymentsScreen: React.FC = () => {
 
     setLoading(false);
   };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadPayments();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    loadPayments();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPayments();
+    }, [])
+  );
 
   /**
    *  PAY EXISTING PAYMENT (NEW FLOW)
@@ -123,7 +131,7 @@ const PaymentsScreen: React.FC = () => {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
 
         {/* SUMMARY */}
         <View style={styles.summaryContainer}>

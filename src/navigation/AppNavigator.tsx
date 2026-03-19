@@ -11,6 +11,7 @@ import GoogleMaps from '@screens/customer/GoogleMaps';
 import GraveMapScreen from '@screens/customer/GraveMapScreen';
 import ProfileScreen from '@screens/customer/ProfileScreen';
 import AnnouncementDetailsScreen from '@screens/customer/AnnouncementDetailsScreen';
+import FeedbackScreen from '@screens/customer/FeedbackScreen';
 
 // Import bottom tab navigator
 import BottomTabNavigator from './BottomTabNavigator';
@@ -78,6 +79,13 @@ const AppNavigator: React.FC = () => {
             <Stack.Screen 
               name="AnnouncementDetails" 
               component={AnnouncementDetailsScreen} 
+            />
+            <Stack.Screen 
+              name="Feedback" 
+              component={FeedbackScreen}
+              options={{
+                title: 'Feedback & Suggestions',
+              }}
             />
           </>
         )}

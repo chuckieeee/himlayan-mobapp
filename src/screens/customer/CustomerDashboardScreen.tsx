@@ -241,11 +241,18 @@ const CustomerDashboardScreen: React.FC = () => {
       onPress: () => navigation.navigate('Map'), // new map screen
     },
     {
-    id: 6,
-    title: 'My Profile',
-    description: 'View your personal information',
-    icon: '👤',
-    onPress: () => navigation.navigate('UserProfile'),
+      id: 6,
+      title: 'My Profile',
+      description: 'View your personal information',
+      icon: '👤',
+      onPress: () => navigation.navigate('UserProfile'),
+    },
+    {
+      id: 7,
+      title: 'Send Feedback',
+      description: 'Share your feedback and suggestions',
+      icon: '💬',
+      onPress: () => navigation.navigate('Feedback'),
     },
   ];
 
