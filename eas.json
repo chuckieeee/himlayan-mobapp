@@ -19,8 +19,9 @@
     },
     "production": {
       "autoIncrement": true,
+      "developmentClient": false,
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
       }
     }
   },
