@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS, API_BASE_URL } from '@/config/api';
+import { AuthService } from './AuthService';
 
 const AUTH_TOKEN_KEY = STORAGE_KEYS.AUTH_TOKEN;
 
@@ -12,7 +13,8 @@ export interface ApiResponse<T = any> {
 class ApiClient {
 
   private async getHeaders(): Promise<HeadersInit> {
-    const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+    // Ensure token is valid (refresh if needed)
+    const token = await AuthService.ensureValidToken();
     
     return {
       'Content-Type': 'application/json',
@@ -31,6 +33,16 @@ class ApiClient {
     } catch {
       console.error('❌ Non-JSON response from server:', text);
       return { success: false, message: 'Server returned invalid response' };
+    }
+
+    // Handle 401 (token expired/invalid)
+    if (response.status === 401) {
+      console.log('⚠️ Unauthorized (401) - clearing auth');
+      await AuthService.logout();
+      return {
+        success: false,
+        message: 'Session expired. Please log in again.',
+      };
     }
 
     if (!response.ok) {

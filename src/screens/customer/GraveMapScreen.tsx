@@ -218,7 +218,7 @@ const GraveMapScreen: React.FC<Props> = ({ route }) => {
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        region={
+        initialRegion={
           region || {
             latitude,
             longitude,
