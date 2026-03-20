@@ -156,10 +156,11 @@ const GraveDetailsScreen: React.FC = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Main Info */}
+        {/* Main Info - Tribute Card */}
         <View style={[commonStyles.card, styles.mainCard]}>
           {grave.obituary ? (
-            <Text numberOfLines={3} style={styles.obituaryText}>
+            // Display full obituary text without line limit - allows users to read complete tribute
+            <Text style={styles.obituaryText}>
               "{grave.obituary}"
             </Text>
           ) : (

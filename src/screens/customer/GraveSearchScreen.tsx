@@ -73,6 +73,7 @@ const GraveSearchScreen: React.FC = () => {
     console.log('RESULT TAPPED:', result);
 
     try {
+      // Fetch full burial record details to get coordinates
       const response = await api.get(`/burial-records/${result.id}`);
 
       console.log('API response:', response);
@@ -82,10 +83,11 @@ const GraveSearchScreen: React.FC = () => {
         return;
       }
 
-      const grave = response.data;
+      const fullRecord = response.data;
 
-      navigation.navigate('GraveMap', {
-        plot: grave.plot,
+      // Navigate to GraveDetails with complete burial record
+      navigation.navigate('GraveDetails', {
+        burialRecord: fullRecord,
       });
     } catch (err) {
       console.error('Burial fetch error:', err);
