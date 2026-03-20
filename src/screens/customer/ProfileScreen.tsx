@@ -58,7 +58,7 @@ const ProfileScreen: React.FC = () => {
 
       const resData = await response.json();
       const userData = resData.data;
-
+      console.log("USER DATA:", userData);
       // ⚠️ Handle token expiration (401 Unauthorized)
       if (!response.ok) {
         if (response.status === 401) {
@@ -73,9 +73,10 @@ const ProfileScreen: React.FC = () => {
         fullName: userData.name,
         email: userData.email,
         phone: userData.phone || userData.phone_number || userData.contact_number || userData.mobile,
-        avatar: userData.avatar,
+        avatar: userData.avatar
+          ? `https://himlayangpilipino.com/storage/${userData.avatar}`
+          : null,
       });
-
       // Load user's plots
       loadMyPlots();
 

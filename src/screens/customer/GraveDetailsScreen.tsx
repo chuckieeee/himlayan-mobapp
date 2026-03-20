@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -24,6 +25,7 @@ interface Grave {
   burialDate?: string;
   obituary?: string;
   qrCode?: string;
+  photo?: string; // ✅ added
   location: {
     latitude: number;
     longitude: number;
@@ -53,29 +55,56 @@ const GraveDetailsScreen: React.FC = () => {
   }, [graveId, burialRecord]);
 
   const mapAndSetGrave = (apiGrave: any) => {
-    // Handle both API formats:
-    // 1. QR scanner format: apiGrave.location (direct)
-    // 2. Burial record API format: apiGrave.plot (nested)
-    const locationData = apiGrave.location || apiGrave.plot || {};
-    
-    const mappedGrave: Grave = {
-      deceasedName: apiGrave.deceased_name,
-      section: locationData.section,
-      lotNumber: locationData.plot_number,
-      birthDate: apiGrave.birth_date,
-      deathDate: apiGrave.death_date,
-      burialDate: apiGrave.burial_date,
-      obituary: apiGrave.obituary,
-      qrCode: apiGrave.qr_code?.code ?? 'N/A',
-      location: {
-        latitude: Number(locationData.latitude),
-        longitude: Number(locationData.longitude),
-      },
-    };
 
-    setGrave(mappedGrave);
-    setLoading(false);
+  const locationData = apiGrave.location || apiGrave.plot || {};
+
+  // 👇 HANDLE BOTH burialRecord + API response
+  const photoPath =
+    apiGrave.deceased_photo_url ||
+    apiGrave?.data?.deceased_photo_url;
+
+  const mappedGrave: Grave = {
+    deceasedName:
+      apiGrave.deceased_name ||
+      apiGrave?.data?.deceased_name,
+
+    section: locationData.section,
+    lotNumber: locationData.plot_number,
+
+    birthDate:
+      apiGrave.birth_date ||
+      apiGrave?.data?.birth_date,
+
+    deathDate:
+      apiGrave.death_date ||
+      apiGrave?.data?.death_date,
+
+    burialDate:
+      apiGrave.burial_date ||
+      apiGrave?.data?.burial_date,
+
+    obituary:
+      apiGrave.obituary ||
+      apiGrave?.data?.obituary,
+
+    qrCode: apiGrave.qr_code?.code ?? 'N/A',
+
+    // ✅ FINAL FIX
+    photo: photoPath
+      ? `https://himlayangpilipino.com/storage/${photoPath}`
+      : null,
+
+    location: {
+      latitude: Number(locationData.latitude),
+      longitude: Number(locationData.longitude),
+    },
   };
+
+  console.log("MAPPED GRAVE:", mappedGrave);
+
+  setGrave(mappedGrave);
+  setLoading(false);
+};
 
   const loadGraveDetails = async () => {
     setLoading(true);
@@ -156,10 +185,9 @@ const GraveDetailsScreen: React.FC = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Main Info - Tribute Card */}
+        {/* Main Info */}
         <View style={[commonStyles.card, styles.mainCard]}>
           {grave.obituary ? (
-            // Display full obituary text without line limit - allows users to read complete tribute
             <Text style={styles.obituaryText}>
               "{grave.obituary}"
             </Text>
@@ -169,11 +197,22 @@ const GraveDetailsScreen: React.FC = () => {
             </Text>
           )}
 
-          <Text style={styles.deceasedName}>{grave.deceasedName}</Text>
+          {/* ✅ PHOTO HERE */}
+          {grave.photo ? (
+            <Image
+              source={{ uri: grave.photo }}
+              style={styles.deceasedImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.sectionBadge}>
+              <Text style={styles.sectionBadgeText}>
+                {grave.deceasedName?.charAt(0) || '?'}
+              </Text>
+            </View>
+          )}
 
-          <View style={styles.sectionBadge}>
-            <Text style={styles.sectionBadgeText}>{grave.section}</Text>
-          </View>
+          <Text style={styles.deceasedName}>{grave.deceasedName}</Text>
         </View>
 
         {/* Info Card */}
@@ -186,7 +225,7 @@ const GraveDetailsScreen: React.FC = () => {
           <DetailRow label="Burial Date" value={formatDate(grave.burialDate)} />
         </View>
 
-        {/* Location Card */}
+        {/* Location */}
         <View style={commonStyles.card}>
           <Text style={styles.sectionTitle}>Location</Text>
 
@@ -276,16 +315,25 @@ const styles = StyleSheet.create({
     ...typography.h2,
     color: colors.surface,
     textAlign: 'center',
-    marginBottom: spacing.md,
+    marginTop: spacing.md,
+  },
+  deceasedImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginTop: spacing.md,
   },
   sectionBadge: {
     backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: spacing.md,
   },
   sectionBadgeText: {
-    ...typography.body2,
+    ...typography.h3,
     color: colors.primary,
     fontWeight: '600',
   },

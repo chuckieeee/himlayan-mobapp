@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Image } from 'react-native';
 import {
   View,
   Text,
@@ -181,9 +182,20 @@ const GraveSearchScreen: React.FC = () => {
                     key={result.id}
                     style={styles.resultCard}
                     onPress={() => handleResultPress(result)}>
+                  {result.deceased_photo_url ? (
+                    <Image
+                      source={{
+                        uri: `https://himlayangpilipino.com/storage/${result.deceased_photo_url}`,
+                      }}
+                      style={styles.resultAvatarImage}
+                    />
+                  ) : (
                     <View style={styles.resultAvatar}>
-                      <Text style={styles.resultAvatarText}>👤</Text>
+                      <Text style={styles.resultAvatarText}>
+                        {result.deceased_name?.charAt(0) || '?'}
+                      </Text>
                     </View>
+                  )}
                     <View style={styles.resultInfo}>
                       <Text style={styles.resultName}>
                         {result.deceased_name}
@@ -543,6 +555,12 @@ const styles = StyleSheet.create({
     ...typography.body2,
     color: colors.textSecondary,
   },
+  resultAvatarImage: {
+  width: 50,
+  height: 50,
+  borderRadius: 25,
+  marginRight: spacing.md,
+},
 });
 
 export default GraveSearchScreen;

@@ -217,7 +217,7 @@ const PaymentsScreen: React.FC = () => {
                   })}
                 </Text>
 
-                  {payment.status === "pending" && (
+                  {payment.status === "pending" && !payment.reference_number && (
 
                     <TouchableOpacity
                       style={styles.payButton}
@@ -227,6 +227,16 @@ const PaymentsScreen: React.FC = () => {
                         Pay Now
                       </Text>
                     </TouchableOpacity>
+
+                  )}
+
+                  {payment.status === "pending" && !!payment.reference_number && (
+
+                    <View style={styles.awaitingBadge}>
+                      <Text style={styles.awaitingText}>
+                      Awaiting Confirmation
+                      </Text>
+                    </View>
 
                   )}
 
@@ -361,6 +371,21 @@ const styles = StyleSheet.create({
   },
 
   emptyText: {},
+
+  awaitingBadge: {
+    marginTop: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.warning,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  awaitingText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 13,
+  },
 
 });
 
