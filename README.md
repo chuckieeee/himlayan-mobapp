@@ -5,13 +5,13 @@ This repository contains the source code for the Himlayang Pilipino Memorial Par
 
 ## ✨ Key Features
 
-*   **User Authentication**: Secure login and registration for visitors and customers.
+*   **User Authentication**: Secure login for customers to access personalized features.
 *   **Grave Search**: Easily find plots by searching for the deceased's name.
 *   **Real-time Navigation**: Integrates with Google Maps to provide turn-by-turn walking directions to a selected grave location.
-*   **QR Code Scanner**: Scan QR codes on plots to instantly view detailed information, including the deceased's name, dates, and section.
-*   **Interactive Dashboard**: A user-friendly home screen with quick access to key features and the latest announcements from the park administration.
-*   **Plot Details**: View comprehensive details for each grave, including an interactive map preview of its location.
-*   **Announcements**: Stay informed with the latest news, schedules, and updates.
+*   **QR Code Scanner**: Scan QR codes on plots to instantly view detailed information, including the deceased's name, biography, and location.
+*   **Interactive Dashboard**: A user-friendly home screen with quick access to key features, owned plots, and the latest announcements from the park administration.
+*   **Plot Management**: Customers can view a list of their owned plots and their status.
+*   **Announcements & Payments**: Stay informed with news and updates, and view payment history and outstanding balances.
 
 ## 🛠️ Tech Stack
 
@@ -20,10 +20,10 @@ This repository contains the source code for the Himlayang Pilipino Memorial Par
 *   **Navigation**: React Navigation (Stack & Bottom Tabs)
 *   **UI Components**: React Native Paper
 *   **Mapping**: React Native Maps (Google Maps), Expo Location
-*   **Camera & QR Scanning**: Expo Camera, Expo Barcode Scanner
-*   **API Client**: Axios & Fetch
+*   **Camera & QR Scanning**: Expo Camera
+*   **API Client**: Fetch API
 *   **State & Storage**: React Context, AsyncStorage
-*   **Backend (Mock)**: A simple Express.js server is included for basic user authentication during development.
+*   **Backend (Mock)**: A simple Express.js server is included for handling user authentication during development.
 
 ## 📁 Project Structure
 
@@ -32,10 +32,10 @@ The repository is organized as follows:
 ```
 .
 ├── android/            # Android native project files
-├── backend/            # Minimal Express.js mock server
+├── backend/            # Minimal Express.js mock server for development
 ├── src/
 │   ├── config/         # API configuration and endpoints
-│   ├── data/           # Mock data for development
+│   ├── data/           # Mock data (legacy)
 │   ├── navigation/     # React Navigation setup (Stack, Tabs)
 │   ├── screens/        # All application screens, organized by role
 │   │   └── customer/   # Customer-facing screens
@@ -56,6 +56,7 @@ Follow these instructions to set up and run the project locally for development.
 *   NPM or Yarn
 *   Expo CLI (`npm install -g expo-cli`)
 *   A configured environment for either Android (Android Studio) or iOS (Xcode).
+*   A tool like [ngrok](https://ngrok.com/) to expose your local server to the internet.
 
 ### Installation & Setup
 
@@ -68,36 +69,39 @@ Follow these instructions to set up and run the project locally for development.
 2.  **Install frontend dependencies:**
     ```bash
     npm install
-    # or
-    yarn install
     ```
 
 3.  **Start the mock backend server:**
-    The backend is a simple Express server for handling login requests during development.
+    The backend is a simple Express server to handle login requests during development.
     ```bash
     cd backend
     npm install
     node index.js
     ```
-    The server will run on `http://localhost:8000`.
+    The server will start on `http://localhost:8000`.
 
 4.  **Configure the API Endpoint:**
-    *   The backend server will run locally. To connect your mobile device to it, you'll need to expose the local server to the internet using a tool like [ngrok](https://ngrok.com/).
-    *   Once you have an ngrok URL (e.g., `https://your-ngrok-url.ngrok-free.dev`), update the `API_BASE_URL` in `src/config/api.ts` and `src/services/api.ts`.
+    *   Your mobile device needs to access the local backend server. Use a tool like **ngrok** to create a public URL for it.
+        ```bash
+        ngrok http 8000
+        ```
+    *   Copy the `https://...` forwarding URL provided by ngrok.
+    *   Open `src/config/api.ts` and `src/services/api.ts` and replace the `API_BASE_URL` with your ngrok URL.
 
 5.  **Run the mobile application:**
+    From the root project directory, run one of the following commands:
     *   **On Android:**
         ```bash
-        expo run:android
+        npm run android
         ```
     *   **On iOS:**
         ```bash
-        expo run:ios
+        npm run ios
         ```
 
 ### Test Credentials
 
-You can use the following credentials to log in with the mock backend server:
+You can use the following credentials to log in using the mock backend server:
 
 *   **Email**: `admin@cemetery.com`
 *   **Password**: `password123`
