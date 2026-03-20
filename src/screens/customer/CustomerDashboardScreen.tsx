@@ -230,7 +230,7 @@ const CustomerDashboardScreen: React.FC = () => {
       id: 4,
       title: 'Notifications & Announcements',
       description: 'View latest updates and news',
-      icon: '📢',
+      icon: '🔔',
       onPress: () => navigation.navigate('Profile'),
     },
     {

@@ -190,14 +190,14 @@ const GraveSearchScreen: React.FC = () => {
                       </Text>
                       <View style={styles.resultDetails}>
                         <Text style={styles.resultDetail}>
-                          📍 Plot: {result.plot?.plot_number || 'N/A'}
+                          Plot: {result.plot?.plot_number || 'N/A'}
                         </Text>
                         <Text style={styles.resultDetail}>
-                          🏛️ Section: {result.plot?.section || 'N/A'}
+                          Section: {result.plot?.section || 'N/A'}
                         </Text>
                         {result.birth_date && result.death_date && (
                           <Text style={styles.resultDetail}>
-                            📅 {result.birth_date} - {result.death_date}
+                            {result.birth_date} - {result.death_date}
                           </Text>
                         )}
                       </View>
