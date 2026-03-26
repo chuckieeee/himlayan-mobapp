@@ -32,7 +32,10 @@
         "CAMERA",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
       ],
 
       "notification": {
@@ -59,6 +62,12 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Himlayang Pilipino to use your location for navigation assistance."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Himlayang Pilipino to save QR codes to your photos."
         }
       ],
       "expo-web-browser"

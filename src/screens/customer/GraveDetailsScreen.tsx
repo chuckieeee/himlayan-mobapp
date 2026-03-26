@@ -7,6 +7,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
+  Modal,
+  Alert,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -15,6 +17,8 @@ import { GraveService } from '@services/GraveService';
 import { colors, spacing, typography } from '@styles/theme';
 import { commonStyles } from '@styles/commonStyles';
 import MapView, { Marker } from 'react-native-maps';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
 
 interface Grave {
   deceasedName: string;
@@ -25,7 +29,7 @@ interface Grave {
   burialDate?: string;
   obituary?: string;
   qrCode?: string;
-  photo?: string; // ✅ added
+  photo?: string | null;
   location: {
     latitude: number;
     longitude: number;
@@ -43,6 +47,8 @@ const GraveDetailsScreen: React.FC = () => {
 
   const [grave, setGrave] = useState<Grave | null>(null);
   const [loading, setLoading] = useState(true);
+  const [qrModalVisible, setQrModalVisible] = useState(false);
+  const [downloadingQr, setDownloadingQr] = useState(false);
 
   useEffect(() => {
     if (burialRecord) {
@@ -100,8 +106,6 @@ const GraveDetailsScreen: React.FC = () => {
     },
   };
 
-  console.log("MAPPED GRAVE:", mappedGrave);
-
   setGrave(mappedGrave);
   setLoading(false);
 };
@@ -131,6 +135,52 @@ const GraveDetailsScreen: React.FC = () => {
         section: grave.section,
       },
     });
+  };
+
+  const handleDownloadQr = async () => {
+    if (!qrImageUrl || downloadingQr) return;
+
+    try {
+      setDownloadingQr(true);
+
+      // Request both read and write permissions for older Android compatibility
+      const permissionResponse = await MediaLibrary.requestPermissionsAsync(false);
+      if (!permissionResponse.granted) {
+        Alert.alert(
+          'Permission needed',
+          'Please allow photo library access to save the QR code.'
+        );
+        return;
+      }
+
+      const cacheDir = FileSystem.cacheDirectory;
+      if (!cacheDir) {
+        Alert.alert('Error', 'Cache directory is not available on this device.');
+        return;
+      }
+
+      const safeName = (grave?.deceasedName || 'grave')
+        .replace(/[^a-z0-9]/gi, '_')
+        .toLowerCase();
+      const fileName = `qr_${safeName}_${Date.now()}.png`;
+      const fileUri = `${cacheDir}${fileName}`;
+
+      const downloadResult = await FileSystem.downloadAsync(qrImageUrl, fileUri);
+
+      if (downloadResult.status !== 200) {
+        Alert.alert('Download failed', `Server returned status ${downloadResult.status}.`);
+        return;
+      }
+
+      await MediaLibrary.saveToLibraryAsync(downloadResult.uri);
+
+      Alert.alert('Saved', 'QR code was saved to your gallery.');
+    } catch (error: any) {
+      console.error('QR download error:', error);
+      Alert.alert('Download failed', error?.message ?? 'Unable to download QR code right now.');
+    } finally {
+      setDownloadingQr(false);
+    }
   };
 
   if (loading) {
@@ -170,6 +220,11 @@ const GraveDetailsScreen: React.FC = () => {
       day: 'numeric',
     });
   };
+
+  const hasQRCode = Boolean(grave.qrCode && grave.qrCode !== 'N/A');
+  const qrImageUrl = hasQRCode
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=0&data=${encodeURIComponent(grave.qrCode as string)}`
+    : null;
 
   return (
     <View style={commonStyles.container}>
@@ -254,6 +309,24 @@ const GraveDetailsScreen: React.FC = () => {
             {grave.location.latitude.toFixed(4)}, {grave.location.longitude.toFixed(4)}
           </Text>
 
+          {hasQRCode && qrImageUrl ? (
+            <View style={styles.qrContainer}>
+              <Text style={styles.qrTitle}>Plot QR Code</Text>
+              <TouchableOpacity
+                onPress={() => setQrModalVisible(true)}
+                activeOpacity={0.85}
+              >
+                <Image
+                  source={{ uri: qrImageUrl }}
+                  style={styles.qrImage}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+              <Text style={styles.qrValue}>{grave.qrCode}</Text>
+              <Text style={styles.qrHint}>Tap QR to view full screen</Text>
+            </View>
+          ) : null}
+
           <TouchableOpacity
             style={[commonStyles.button, styles.navigateButton]}
             onPress={handleNavigate}
@@ -264,6 +337,44 @@ const GraveDetailsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {hasQRCode && qrImageUrl ? (
+        <Modal
+          visible={qrModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setQrModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Plot QR Code</Text>
+              <Image
+                source={{ uri: qrImageUrl }}
+                style={styles.fullscreenQrImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.modalQrValue}>{grave.qrCode}</Text>
+
+              <TouchableOpacity
+                style={styles.downloadButton}
+                onPress={handleDownloadQr}
+                disabled={downloadingQr}
+              >
+                <Text style={styles.downloadButtonText}>
+                  {downloadingQr ? 'Downloading...' : 'Download QR'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setQrModalVisible(false)}
+              >
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      ) : null}
     </View>
   );
 };
@@ -363,6 +474,90 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     marginBottom: spacing.md,
+  },
+  qrContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    padding: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    borderRadius: 10,
+    backgroundColor: colors.backgroundSecondary,
+  },
+  qrTitle: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  qrImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 6,
+    backgroundColor: colors.surface,
+  },
+  qrValue: {
+    ...typography.caption,
+    color: colors.textTertiary,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+  },
+  qrHint: {
+    ...typography.caption,
+    color: colors.info,
+    marginTop: spacing.xs,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    ...typography.h4,
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  fullscreenQrImage: {
+    width: 280,
+    height: 280,
+    backgroundColor: colors.surface,
+  },
+  modalQrValue: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    marginTop: spacing.md,
+    textAlign: 'center',
+  },
+  closeButton: {
+    marginTop: spacing.md,
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 8,
+  },
+  closeButtonText: {
+    ...typography.button,
+    color: colors.surface,
+  },
+  downloadButton: {
+    marginTop: spacing.md,
+    backgroundColor: colors.secondary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 8,
+  },
+  downloadButtonText: {
+    ...typography.button,
+    color: colors.primaryDark,
   },
   navigateButton: {
     backgroundColor: colors.info,

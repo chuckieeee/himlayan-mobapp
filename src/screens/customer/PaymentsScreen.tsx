@@ -48,7 +48,8 @@ const PaymentsScreen: React.FC = () => {
       setPayments(userPayments as any);
       setSummary(paymentSummary);
     } catch (error) {
-      console.log("Load payments error:", error);
+      // Optionally, you can use console.error here if you want to keep error logs
+      // console.error("Load payments error:", error);
     }
 
     setLoading(false);
@@ -86,7 +87,8 @@ const PaymentsScreen: React.FC = () => {
         );
       }
     } catch (error) {
-      console.log(error);
+      // Optionally, you can use console.error here if you want to keep error logs
+      // console.error(error);
       Alert.alert("Error", "Failed to create payment");
     }
   };
@@ -97,6 +99,8 @@ const PaymentsScreen: React.FC = () => {
         return colors.success;
       case "pending":
         return colors.warning;
+      case "under_investigation":
+        return colors.secondary;
       case "rejected":
         return colors.error;
       default:
@@ -104,6 +108,23 @@ const PaymentsScreen: React.FC = () => {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "verified": return "VERIFIED";
+      case "pending": return "PENDING";
+      case "under_investigation": return "UNDER REVIEW";
+      case "rejected": return "REJECTED";
+      default: return status.toUpperCase();
+    }
+  };
+
+    const isUnderReview = (payment: any) => {
+      return (
+        (payment.status || "").toLowerCase() === "pending" &&
+        typeof payment.admin_reason === "string" &&
+        payment.admin_reason.trim().length > 0
+      );
+    };
   if (loading) {
     return (
       <View style={commonStyles.centeredContainer}>
@@ -178,9 +199,11 @@ const PaymentsScreen: React.FC = () => {
 
           ) : (
 
-            payments.map((payment: any) => (
+            payments.map((payment: any, index: number) => (
 
-              <View key={payment.id} style={styles.paymentCard}>
+              <React.Fragment key={payment.id}>
+
+              <View style={styles.paymentCard}>
 
                 <View style={styles.paymentHeader}>
 
@@ -195,16 +218,20 @@ const PaymentsScreen: React.FC = () => {
                     </Text>
                   </View>
 
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      { backgroundColor: getStatusColor(payment.status) },
-                    ]}
-                  >
-                    <Text style={styles.statusText}>
-                      {payment.status.toUpperCase()}
-                    </Text>
-                  </View>
+                  {!isUnderReview(payment) && (
+                    <View
+                      style={[
+                        styles.statusBadge,
+                          {
+                            backgroundColor: getStatusColor(payment.status),
+                          },
+                      ]}
+                    >
+                      <Text style={styles.statusText}>
+                        {getStatusLabel(payment.status)}
+                      </Text>
+                    </View>
+                  )}
 
                 </View>
 
@@ -217,7 +244,20 @@ const PaymentsScreen: React.FC = () => {
                   })}
                 </Text>
 
-                  {payment.status === "pending" && !payment.reference_number && (
+                  {isUnderReview(payment) && (
+                    <View style={styles.investigationBadge}>
+                      <Text style={styles.investigationTitle}>
+                        Pending Confirmation (Under Investigation)
+                      </Text>
+                      <Text style={styles.investigationMessage}>
+                        Under review. Allow 1–7 business days.
+                      </Text>
+                    </View>
+                  )}
+
+                  {payment.status === "pending" &&
+                    !payment.reference_number &&
+                    !isUnderReview(payment) && (
 
                     <TouchableOpacity
                       style={styles.payButton}
@@ -230,7 +270,9 @@ const PaymentsScreen: React.FC = () => {
 
                   )}
 
-                  {payment.status === "pending" && !!payment.reference_number && (
+                  {payment.status === "pending" &&
+                    !!payment.reference_number &&
+                    !isUnderReview(payment) && (
 
                     <View style={styles.awaitingBadge}>
                       <Text style={styles.awaitingText}>
@@ -243,6 +285,12 @@ const PaymentsScreen: React.FC = () => {
                 </View>
 
               </View>
+
+              {index < payments.length - 1 && (
+                <View style={styles.paymentDivider} />
+              )}
+
+              </React.Fragment>
 
             ))
 
@@ -311,7 +359,12 @@ const styles = StyleSheet.create({
   paymentCard: {
     backgroundColor: colors.background,
     padding: spacing.md,
-    marginBottom: spacing.md,
+    paddingVertical: spacing.lg,
+  },
+  paymentDivider: {
+    height: 1,
+    backgroundColor: colors.borderLight,
+    marginHorizontal: spacing.sm,
   },
 
   paymentHeader: {
@@ -385,6 +438,27 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
     fontSize: 13,
+  },
+
+  investigationBadge: {
+    marginTop: spacing.sm,
+    padding: spacing.sm,
+    backgroundColor: colors.warningLight,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
+    borderRadius: 12,
+  },
+
+  investigationTitle: {
+    fontWeight: "bold",
+    fontSize: 13,
+    color: colors.warningDark,
+    marginBottom: 2,
+  },
+
+  investigationMessage: {
+    fontSize: 12,
+    color: colors.warningDark,
   },
 
 });

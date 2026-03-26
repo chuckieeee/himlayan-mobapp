@@ -8,7 +8,7 @@ export interface Payment {
   amount: number;
   payment_type: string;
   payment_method: string;
-  status: "pending" | "verified" | "rejected";
+  status: "pending" | "verified" | "rejected" | "under_investigation";
   reference_number?: string;
   created_at?: string;
 }
@@ -20,9 +20,6 @@ export class PaymentService {
    */
   static async getUserPayments(): Promise<Payment[]> {
     const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-
-    console.log("TOKEN (PAYMENTS):", token);
-
     const response = await fetch(`${API_URL}/payments/my-dues`, {
       method: "GET",
       headers: {
@@ -33,14 +30,11 @@ export class PaymentService {
     });
 
     const text = await response.text();
-    console.log("PAYMENTS RAW:", text);
 
     let data;
-
     try {
       data = JSON.parse(text);
     } catch (e) {
-      console.log("PAYMENTS NOT JSON:", text);
       return [];
     }
 
@@ -59,9 +53,6 @@ export class PaymentService {
     paymentMethod: string = "all"
   ) {
     const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-
-    console.log("TOKEN (CHECKOUT):", token);
-
     const response = await fetch(
       `${API_URL}/payments/${paymentId}/checkout`,
       {
@@ -78,20 +69,16 @@ export class PaymentService {
     );
 
     const text = await response.text();
-    console.log(" CHECKOUT RAW RESPONSE:", text);
 
     let data;
-
     try {
       data = JSON.parse(text);
     } catch (e) {
-      console.log(" NOT JSON RESPONSE:", text);
       throw new Error("Server returned invalid response");
     }
 
     // ⚠️ Handle token expiration (401 Unauthorized)
     if (response.status === 401) {
-      console.log('⚠️ Token expired or invalid - logging out');
       await AsyncStorage.multiRemove([
         STORAGE_KEYS.AUTH_TOKEN,
         STORAGE_KEYS.CURRENT_USER,
@@ -100,7 +87,6 @@ export class PaymentService {
     }
 
     if (!response.ok) {
-      console.log(" BACKEND ERROR:", data);
       throw new Error(data.message || "Checkout failed");
     }
 
@@ -120,7 +106,7 @@ export class PaymentService {
     });
 
     const data = await response.json();
-    return data.data || [];
+      return data.data || [];
   }
 
   /**
@@ -143,7 +129,7 @@ export class PaymentService {
       }
 
       //  PENDING (includes awaiting verification)
-      else if (status === "pending" || status === "awaiting_verification") {
+      else if (status === "pending" || status === "awaiting_verification" || status === "under_investigation") {
         totalPending += amount;
       }
 

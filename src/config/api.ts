@@ -66,7 +66,7 @@ export const apiRequest = async <T = any>(
 
     // ⚠️ Handle token expiration/invalidation (401 Unauthorized)
     if (response.status === 401) {
-      console.log('⚠️ Token expired or invalid - logging out');
+      console.log('Token expired or invalid - logging out');
       // Clear auth data
       await AsyncStorage.multiRemove([
         STORAGE_KEYS.AUTH_TOKEN,

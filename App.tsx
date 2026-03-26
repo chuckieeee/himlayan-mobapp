@@ -10,16 +10,13 @@ const App: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        console.log('🚀 App initializing...');
         
         // Initialize Firebase first
         if (!firebase.apps.length) {
           await firebase.initializeApp();
-          console.log('✅ Firebase initialized');
         }
         
         await setupNotificationChannel();
-        console.log('✅ App initialized successfully');
       } catch (error) {
         console.error('❌ App initialization error:', error);
       }

@@ -63,23 +63,6 @@ export async function setupNotificationChannel(): Promise<void> {
 
     // Listen for notification responses (when user taps notification)
     notificationResponseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-      // ✅ Handle FCM messages when app is OPEN (foreground)
-      messaging().onMessage(async remoteMessage => {
-
-        messaging().onMessage(async remoteMessage => {
-        console.log('🔥 FOREGROUND MESSAGE:', JSON.stringify(remoteMessage, null, 2));
-      });
-        console.log('📩 FCM foreground message:', remoteMessage);
-
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: remoteMessage.notification?.title || 'New Notification',
-            body: remoteMessage.notification?.body || '',
-            data: remoteMessage.data,
-          },
-          trigger: null, // show immediately
-        });
-      });
       console.log('👆 User tapped notification:', {
         title: response.notification.request.content.title,
         body: response.notification.request.content.body,
